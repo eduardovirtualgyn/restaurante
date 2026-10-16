@@ -164,16 +164,6 @@ const Menu: React.FC = () => {
     setShowDeleteModal(true);
   };
 
-  const handleLoadModelMenu = () => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    if (!user.restaurant_id) return;
-    const fullItems = getDefaultGoianoMenu(user.restaurant_id);
-    setMenuItems(fullItems);
-    localStorage.setItem(`menu_${user.restaurant_id}`, JSON.stringify(fullItems));
-    localStorage.setItem(`menu_initialized_${user.restaurant_id}`, "true");
-    window.dispatchEvent(new Event("local-data-updated"));
-  };
-
   if (loading) {
     return <Loading text="Carregando cardápio..." />;
   }
@@ -188,14 +178,7 @@ const Menu: React.FC = () => {
             Configure seus pratos, turnos, adicionais de upsell e disponibilidade
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            icon={<Sparkles className="w-4 h-4 text-accent" />}
-            onClick={handleLoadModelMenu}
-          >
-            Carregar Cardápio Modelo (Almoço & Noite)
-          </Button>
+        <div>
           <Button
             icon={<Plus className="w-5 h-5" />}
             onClick={() => setShowAddModal(true)}
