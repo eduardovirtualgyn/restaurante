@@ -1,0 +1,9 @@
+services:
+  foodorder-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: foodorder-app
+    restart: always
+    ports:
+      - "80:80"

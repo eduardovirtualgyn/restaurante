@@ -1,0 +1,210 @@
+import type { MenuItem } from "../config/supabase";
+
+export const getDefaultGoianoMenu = (restaurantId: string): MenuItem[] => [
+  // ⭐ COMBOS & DESTAQUES FAMÍLIA (Topo de Conversão)
+  {
+    id: `item-${restaurantId}-familia-marmita`,
+    restaurant_id: restaurantId,
+    name: "6. Marmita Família / Corporativa (Serve 3 a 4 pessoas)",
+    description: "Almoço farto e completo! 500g de carnes selecionadas à escolha + 650g de guarnições tradicionais fartas (arroz soltinho, feijão caseiro, farofa crocante e salada) + GRÁTIS 1 Refrigerante de 2 Litros bem gelado.",
+    base_price: 64.9,
+    category: "⭐ Combos Família & Corporativo",
+    image_url: "https://images.unsplash.com/photo-1544025162-d76694265947?w=500&auto=format&fit=crop&q=80",
+    is_available: true,
+    shift: "lunch",
+    sizes: [
+      { name: "Família com Frango Grelhado (500g)", price: 64.9 },
+      { name: "Família com Carne de Sol na Brasa (500g)", price: 69.9 },
+      { name: "Família com Parmegiana Especial (500g)", price: 74.9 },
+    ],
+    addons: [
+      { name: "2x Pudins de Leite em Pote (100g)", price: 14.0 },
+      { name: "3x Ovos Caipiras Fritos", price: 8.0 },
+      { name: "Porção Extra de Purê de Batata (250g)", price: 8.5 },
+    ],
+    created_at: new Date().toISOString(),
+  },
+
+  // 🍛 TURNO ÚNICO: ALMOÇO — MARMITARIA EXECUTIVA (10h30 às 15h00)
+  {
+    id: `item-${restaurantId}-goianinho`,
+    restaurant_id: restaurantId,
+    name: "1. O Goianinho (Frango Grelhado ou Molho Caipira)",
+    description: "Filé de frango marinado em ervas e limão grelhado suculento (180g) OU sobrecoxa ao molho caipira + Arroz branco soltinho (180g), Feijão carioca de caldo encorpado (160g), Farofa crocante da casa (40g) e Salada fresca individual em pote selado (60g).",
+    base_price: 19.9,
+    category: "Almoço — Marmitas Executivas",
+    image_url: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80",
+    is_available: true,
+    shift: "lunch",
+    sizes: [
+      { name: "Filé de Frango Grelhado na Chapa (180g)", price: 19.9 },
+      { name: "Sobrecoxa ao Molho Caipira (200g)", price: 19.9 },
+    ],
+    addons: [
+      { name: "1 Ovo Frito Caipira (gema mole)", price: 3.0 },
+      { name: "Purê de Batata Artesanal na Manteiga (120g)", price: 4.5 },
+      { name: "Refrigerante em Lata 350ml Gelado", price: 6.0 },
+      { name: "Pudim de Leite em Pote (100g)", price: 7.9 },
+    ],
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: `item-${restaurantId}-campeao-parmegiana`,
+    restaurant_id: restaurantId,
+    name: "2. O Campeão (Parmegiana Crocante Gratinado)",
+    description: "Filé de frango empanado crocante dourado (200g), molho rústico de tomate caseiro e cobertura de mozarela gratinada + purê de batata cremoso na manteiga, arroz e feijão carioca.",
+    base_price: 24.9,
+    category: "Almoço — Marmitas Executivas",
+    image_url: "https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=500&auto=format&fit=crop&q=80",
+    is_available: true,
+    shift: "lunch",
+    sizes: [
+      { name: "Marmita Individual Padrão (200g frango)", price: 24.9 },
+      { name: "Marmita Grande Farta (300g frango)", price: 29.9 },
+    ],
+    addons: [
+      { name: "Dobro de Queijo Mozarela Gratinado", price: 5.0 },
+      { name: "Refrigerante em Lata 350ml Geladíssimo", price: 6.0 },
+      { name: "Pudim Tradicional em Pote (100g)", price: 7.9 },
+    ],
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: `item-${restaurantId}-churrasco-tradicional`,
+    restaurant_id: restaurantId,
+    name: "3. Marmita Churrasco Tradicional (Carne de Sol)",
+    description: "Carne de sol artesanal fatiada e grelhada na chapa (160g) com manteiga de garrafa + feijão tropeiro tradicional com torresmo crocante, mandioca macia na manteiga e vinagrete fresco.",
+    base_price: 24.9,
+    category: "Almoço — Marmitas Executivas",
+    image_url: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?w=500&auto=format&fit=crop&q=80",
+    is_available: true,
+    shift: "lunch",
+    sizes: [
+      { name: "Carne de Sol Chapeada (160g) + Tropeiro", price: 24.9 },
+      { name: "Carne de Sol Farta (240g) + Tropeiro Duplo", price: 29.9 },
+    ],
+    addons: [
+      { name: "1 Ovo Caipira Frito na Hora", price: 3.0 },
+      { name: "Porção Extra de Mandioca na Manteiga", price: 5.0 },
+      { name: "Refrigerante em Lata 350ml", price: 6.0 },
+      { name: "Pudim de Leite Condensado (100g)", price: 7.9 },
+    ],
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: `item-${restaurantId}-churrasco-nobre`,
+    restaurant_id: restaurantId,
+    name: "4. Marmita Churrasco Nobre (Cupim Braseado Macio)",
+    description: "Cupim fatiado braseado lentamente até desmanchar na boca (160g) + feijão tropeiro goiano com torresmo e couve, mandioca amanteigada e chimichurri artesanal da casa.",
+    base_price: 29.9,
+    category: "Almoço — Marmitas Executivas",
+    image_url: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&auto=format&fit=crop&q=80",
+    is_available: true,
+    shift: "lunch",
+    sizes: [
+      { name: "Cupim Braseado Macio (160g) + Tropeiro", price: 29.9 },
+      { name: "Cupim Braseado Farto (250g) + Tropeiro", price: 35.9 },
+    ],
+    addons: [
+      { name: "Pote Extra de Chimichurri Artesanal (50ml)", price: 3.5 },
+      { name: "Refrigerante em Lata 350ml Gelado", price: 6.0 },
+      { name: "Pudim de Leite em Pote (100g)", price: 7.9 },
+    ],
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: `item-${restaurantId}-economico-isca`,
+    restaurant_id: restaurantId,
+    name: "5. O Econômico (Isca Diária — Calabresa ou Carne)",
+    description: "Calabresa defumada dourada na chapa com cebola + ovo estrelado frito na hora OU carne bovina picada com batatas ao molho caseiro + arroz branco soltinho, feijão e farofa crocante.",
+    base_price: 16.9,
+    category: "Almoço — Marmitas Executivas",
+    image_url: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=500&auto=format&fit=crop&q=80",
+    is_available: true,
+    shift: "lunch",
+    sizes: [
+      { name: "Calabresa Chapeada com Cebola + Ovo", price: 16.9 },
+      { name: "Carne Picada com Batatas ao Molho", price: 16.9 },
+    ],
+    addons: [
+      { name: "Purê de Batata Artesanal na Manteiga", price: 4.5 },
+      { name: "1 Ovo Frito Caipira Adicional", price: 3.0 },
+      { name: "Refrigerante em Lata 350ml", price: 6.0 },
+    ],
+    created_at: new Date().toISOString(),
+  },
+
+  // 🥤 BEBIDAS GELADAS
+  {
+    id: `item-${restaurantId}-coca-2l`,
+    restaurant_id: restaurantId,
+    name: "Coca-Cola 2 Litros",
+    description: "Garrafa família de 2 Litros bem gelada, perfeita para acompanhar seu almoço executivo.",
+    base_price: 14.0,
+    category: "Bebidas Geladas",
+    image_url: "/images/coca_cola_2l.jpg",
+    is_available: true,
+    shift: "lunch",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: `item-${restaurantId}-guarana-2l`,
+    restaurant_id: restaurantId,
+    name: "Guaraná Antarctica 2 Litros",
+    description: "Garrafa família de 2 Litros trincando de gelada com o sabor original do Brasil.",
+    base_price: 13.0,
+    category: "Bebidas Geladas",
+    image_url: "/images/guarana_2l.jpg",
+    is_available: true,
+    shift: "lunch",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: `item-${restaurantId}-guarana-lata`,
+    restaurant_id: restaurantId,
+    name: "Guaraná Antarctica em Lata 350ml",
+    description: "Lata 350ml super gelada, refrescância clássica na medida certa para a sua refeição.",
+    base_price: 6.0,
+    category: "Bebidas Geladas",
+    image_url: "/images/guarana_lata.jpg",
+    is_available: true,
+    shift: "lunch",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: `item-${restaurantId}-coca-lata`,
+    restaurant_id: restaurantId,
+    name: "Coca-Cola em Lata 350ml",
+    description: "Lata 350ml trincando de gelada à sua escolha (Original ou Sem Açúcar).",
+    base_price: 6.0,
+    category: "Bebidas Geladas",
+    image_url: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500&auto=format&fit=crop&q=80",
+    is_available: true,
+    shift: "lunch",
+    sizes: [
+      { name: "Coca-Cola Original 350ml", price: 6.0 },
+      { name: "Coca-Cola Sem Açúcar 350ml", price: 6.0 },
+    ],
+    created_at: new Date().toISOString(),
+  },
+
+  // 🍮 SOBREMESAS DA CASA
+  {
+    id: `item-${restaurantId}-pudim-leite`,
+    restaurant_id: restaurantId,
+    name: "Pudim Tradicional de Leite Condensado (100g)",
+    description: "Receita clássica artesanal extremamente cremosa e sem furinhos, com calda suave de caramelo dourado. Em pote selado higiênico pronto para consumo imediato.",
+    base_price: 7.9,
+    category: "Sobremesas da Casa",
+    image_url: "https://images.unsplash.com/photo-1517427294546-5aa121f68e8a?w=500&auto=format&fit=crop&q=80",
+    is_available: true,
+    shift: "lunch",
+    created_at: new Date().toISOString(),
+  },
+];
+
+export const normalizeItemShift = (
+  _item: Partial<MenuItem>
+): "lunch" | "dinner" | "all" => {
+  return "lunch";
+};
