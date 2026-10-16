@@ -180,13 +180,13 @@ const LoginPage: React.FC = () => {
     localStorage.setItem(
       "user",
       JSON.stringify({
-        id: "demo-user-123",
-        email: "contato@burgervip.com.br",
+        id: "demo-restaurant-123",
+        email: "contato@cantinhodarose.com.br",
         role: "owner",
         restaurant_id: "demo-restaurant-123",
         restaurant: {
-          name: "Burger Artesanal VIP",
-          slug: "burger-vip",
+          name: "Cantinho da Rose - Marmitaria Executiva",
+          slug: "cantinho-da-rose",
           is_active: true,
         },
         temp_password: false,

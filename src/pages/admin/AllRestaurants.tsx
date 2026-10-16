@@ -62,6 +62,21 @@ const AllRestaurants: React.FC = () => {
       );
       const defaultRestaurants: Restaurant[] = [
         {
+          id: "demo-restaurant-123",
+          name: "Cantinho da Rose - Marmitaria Executiva",
+          slug: "cantinho-da-rose",
+          owner_name: "Rose",
+          phone: "(62) 99999-8888",
+          email: "contato@cantinhodarose.com.br",
+          city: "Goiânia - GO",
+          restaurant_type: "Marmitaria Executiva • Turno do Almoço",
+          subscription_plan: "pro",
+          status: "active",
+          is_active: true,
+          created_at: new Date(Date.now() - 60 * 86400000).toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        {
           id: "rest-1",
           name: "Burger Artesanal VIP",
           slug: "burger-vip",

@@ -68,9 +68,9 @@ const RestaurantDashboard: React.FC = () => {
 
       if (!resolvedName) {
         if (parsedUser.restaurant_id === "demo-restaurant-123") {
-          resolvedName = "Restaurante de Demonstração";
+          resolvedName = "Cantinho da Rose - Marmitaria Executiva";
         } else {
-          resolvedName = "CANTINHO DA ROSE";
+          resolvedName = "Cantinho da Rose - Marmitaria Executiva";
         }
       }
 
