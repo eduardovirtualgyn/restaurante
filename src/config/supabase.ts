@@ -1,8 +1,17 @@
 import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./config";
 
-// Initialize Supabase client
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+// Initialize Supabase client safely with guaranteed valid URL format
+const safeUrl =
+  SUPABASE_URL && SUPABASE_URL.startsWith("http")
+    ? SUPABASE_URL
+    : "https://xyzcompany.supabase.co";
+const safeKey =
+  SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.includes("YOUR_SUPABASE")
+    ? SUPABASE_ANON_KEY
+    : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder_key";
+
+export const supabase = createClient(safeUrl, safeKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,

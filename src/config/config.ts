@@ -3,9 +3,16 @@
 // Get them from: https://app.supabase.com/project/_/settings/api
 
 export const SUPABASE_URL =
-  import.meta.env.VITE_SUPABASE_URL || "YOUR_SUPABASE_URL";
+  import.meta.env.VITE_SUPABASE_URL &&
+  import.meta.env.VITE_SUPABASE_URL !== "YOUR_SUPABASE_URL"
+    ? import.meta.env.VITE_SUPABASE_URL
+    : "https://xyzcompany.supabase.co";
+
 export const SUPABASE_ANON_KEY =
-  import.meta.env.VITE_SUPABASE_ANON_KEY || "YOUR_SUPABASE_ANON_KEY";
+  import.meta.env.VITE_SUPABASE_ANON_KEY &&
+  import.meta.env.VITE_SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY"
+    ? import.meta.env.VITE_SUPABASE_ANON_KEY
+    : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder_key";
 
 // Application Configuration
 export const APP_CONFIG = {
