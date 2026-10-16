@@ -200,7 +200,7 @@ const Menu: React.FC = () => {
             icon={<Plus className="w-5 h-5" />}
             onClick={() => setShowAddModal(true)}
           >
-            Add Item
+            Novo Prato
           </Button>
         </div>
       </div>
@@ -209,7 +209,7 @@ const Menu: React.FC = () => {
       <div className="flex items-center space-x-2 text-sm text-success">
         <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
         <span>
-          Live updates • Availability changes update customers in real-time
+          Atualizações em tempo real • Alterações de disponibilidade refletem instantaneamente no cardápio
         </span>
       </div>
 
@@ -237,7 +237,7 @@ const Menu: React.FC = () => {
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1">
           <Input
-            placeholder="Search menu items..."
+            placeholder="Buscar pratos, marmitas ou bebidas..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             icon={<Search className="w-5 h-5" />}
@@ -254,7 +254,7 @@ const Menu: React.FC = () => {
                   : "bg-white border border-border text-text-secondary hover:bg-bg-subtle"
               }`}
             >
-              {category === "all" ? "All Items" : category}
+              {category === "all" ? "Todos os Pratos" : category}
             </button>
           ))}
         </div>
@@ -265,7 +265,7 @@ const Menu: React.FC = () => {
         <Card className="text-center py-12">
           <Package className="w-16 h-16 text-text-secondary mx-auto mb-4 opacity-50" />
           <h3 className="text-xl font-semibold text-text mb-2">
-            No Menu Items Found
+            Nenhum prato encontrado
           </h3>
           <p className="text-text-secondary mb-4">
             {searchTerm || categoryFilter !== "all"
@@ -276,7 +276,7 @@ const Menu: React.FC = () => {
             icon={<Plus className="w-5 h-5" />}
             onClick={() => setShowAddModal(true)}
           >
-            Add First Item
+            Cadastrar Primeiro Prato
           </Button>
         </Card>
       ) : (
@@ -309,7 +309,7 @@ const Menu: React.FC = () => {
                         <Badge
                           variant={item.is_available ? "success" : "neutral"}
                         >
-                          {item.is_available ? "Available" : "Unavailable"}
+                          {item.is_available ? "Disponível" : "Indisponível"}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-1.5 flex-wrap">
@@ -352,7 +352,7 @@ const Menu: React.FC = () => {
 
                   <div className="flex flex-wrap items-center gap-4 text-sm">
                     <div>
-                      <span className="text-text-secondary">Base Price: </span>
+                      <span className="text-text-secondary">Preço Base: </span>
                       <span className="text-accent font-semibold text-lg">
                         {formatCurrency(item.base_price)}
                       </span>
@@ -360,7 +360,7 @@ const Menu: React.FC = () => {
 
                     {item.sizes && item.sizes.length > 0 && (
                       <div>
-                        <span className="text-text-secondary">Sizes: </span>
+                        <span className="text-text-secondary">Tamanhos: </span>
                         <span className="text-text">
                           {item.sizes.map((s) => s.name).join(", ")}
                         </span>
@@ -369,9 +369,9 @@ const Menu: React.FC = () => {
 
                     {item.addons && item.addons.length > 0 && (
                       <div>
-                        <span className="text-text-secondary">Add-ons: </span>
+                        <span className="text-text-secondary">Adicionais: </span>
                         <span className="text-text">
-                          {item.addons.length} available
+                          {item.addons.length} cadastrados
                         </span>
                       </div>
                     )}
@@ -393,7 +393,7 @@ const Menu: React.FC = () => {
                     onClick={() => handleToggleAvailability(item)}
                     fullWidth
                   >
-                    {item.is_available ? "Mark Unavailable" : "Mark Available"}
+                    {item.is_available ? "Pausar Prato" : "Ativar Prato"}
                   </Button>
                   <Button
                     size="sm"
@@ -402,7 +402,7 @@ const Menu: React.FC = () => {
                     onClick={() => handleEdit(item)}
                     fullWidth
                   >
-                    Edit
+                    Editar
                   </Button>
                   <Button
                     size="sm"
@@ -411,7 +411,7 @@ const Menu: React.FC = () => {
                     onClick={() => handleDelete(item)}
                     fullWidth
                   >
-                    Delete
+                    Excluir
                   </Button>
                 </div>
               </div>

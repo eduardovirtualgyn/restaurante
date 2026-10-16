@@ -355,11 +355,10 @@ const CustomerMenu: React.FC = () => {
         <Card className="text-center p-8">
           <Package className="w-16 h-16 text-text-secondary mx-auto mb-4 opacity-50" />
           <h2 className="text-2xl font-bold text-text mb-2">
-            Restaurant Not Found
+            Restaurante Não Encontrado
           </h2>
           <p className="text-text-secondary">
-            The restaurant you're looking for doesn't exist or is currently
-            inactive.
+            O restaurante procurado não foi encontrado ou está temporariamente inativo.
           </p>
         </Card>
       </div>
@@ -593,7 +592,7 @@ const CustomerMenu: React.FC = () => {
                               }
                               className="px-5 py-1.5 border-2 border-accent text-accent font-bold text-xs rounded-md hover:shadow-md transition-shadow"
                             >
-                              ADD
+                              PEDIR
                             </button>
                           ) : (
                             <div className="flex items-center bg-accent text-white rounded-md">
@@ -683,7 +682,7 @@ const CustomerMenu: React.FC = () => {
               </span>
             </div>
             <div className="flex items-center gap-2 font-semibold text-sm">
-              <span>View Cart</span>
+              <span>Ver Pedido</span>
               <span className="text-lg">›</span>
             </div>
           </button>
@@ -717,12 +716,12 @@ const CartModal: React.FC<CartModalProps> = ({
   );
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Your Cart" size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title="Seu Pedido" size="lg">
       <div className="space-y-6">
         {cart.length === 0 ? (
           <div className="text-center py-8">
             <ShoppingCart className="w-16 h-16 text-text-secondary mx-auto mb-4 opacity-50" />
-            <p className="text-text-secondary">Your cart is empty</p>
+            <p className="text-text-secondary">Sua sacola está vazia</p>
           </div>
         ) : (
           <>
@@ -736,12 +735,12 @@ const CartModal: React.FC<CartModalProps> = ({
                     <h4 className="font-semibold text-text">{item.name}</h4>
                     {item.selectedSize && (
                       <p className="text-sm text-text-secondary">
-                        Size: {item.selectedSize.name}
+                        Tamanho: {item.selectedSize.name}
                       </p>
                     )}
                     {item.selectedAddons.length > 0 && (
                       <p className="text-sm text-text-secondary">
-                        Add-ons:{" "}
+                        Adicionais:{" "}
                         {item.selectedAddons.map((a) => a.name).join(", ")}
                       </p>
                     )}
@@ -782,7 +781,7 @@ const CartModal: React.FC<CartModalProps> = ({
                 <span>{formatCurrency(total)}</span>
               </div>
               <Button onClick={onCheckout} fullWidth size="lg">
-                Proceed to Checkout
+                Avançar para Pagamento
               </Button>
             </div>
           </>
@@ -852,7 +851,7 @@ const ItemCustomizationModal: React.FC<ItemCustomizationModalProps> = ({
         {/* Sizes */}
         {item.sizes && item.sizes.length > 0 && (
           <div>
-            <h4 className="font-semibold text-text mb-3">Select Size</h4>
+            <h4 className="font-semibold text-text mb-3">Escolha o Tamanho</h4>
             <div className="space-y-2">
               {item.sizes.map((size) => (
                 <button
@@ -877,7 +876,7 @@ const ItemCustomizationModal: React.FC<ItemCustomizationModalProps> = ({
         {/* Addons */}
         {item.addons && item.addons.length > 0 && (
           <div>
-            <h4 className="font-semibold text-text mb-3">Add-ons (Optional)</h4>
+            <h4 className="font-semibold text-text mb-3">Acompanhamentos / Adicionais (Opcional)</h4>
             <div className="space-y-2">
               {item.addons.map((addon) => (
                 <button
@@ -909,7 +908,7 @@ const ItemCustomizationModal: React.FC<ItemCustomizationModalProps> = ({
             fullWidth
             size="lg"
           >
-            Add to Cart
+            Adicionar ao Pedido
           </Button>
         </div>
       </div>

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Store, ArrowLeft, Mail, Lock, AlertCircle } from "lucide-react";
 import { Button, Input, Alert, Card } from "../../components/ui";
-import { APP_CONFIG } from "../../config/config";
 import { supabase } from "../../config/supabase";
 import { isValidEmail, hashPassword } from "../../utils/helpers";
 
@@ -210,7 +209,7 @@ const LoginPage: React.FC = () => {
           className="inline-flex items-center text-text-secondary hover:text-text mb-8"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
+          Voltar para o Início
         </Link>
 
         {/* Login Card */}
@@ -220,9 +219,9 @@ const LoginPage: React.FC = () => {
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent/5 mb-4">
               <Store className="w-10 h-10 text-accent" />
             </div>
-            <h1 className="text-2xl font-bold text-text mb-2">Welcome Back</h1>
+            <h1 className="text-2xl font-bold text-text mb-2">Bem-vindo de Volta</h1>
             <p className="text-text-secondary">
-              Login to your restaurant dashboard
+              Acesse o painel do seu restaurante
             </p>
           </div>
 
@@ -230,8 +229,8 @@ const LoginPage: React.FC = () => {
           {error === "pending" && (
             <Alert
               type="warning"
-              title="Account Pending Verification"
-              message="Your registration is under review. Our team will contact you within 24 hours to complete the setup."
+              title="Conta em Análise"
+              message="Seu cadastro está em análise. Nossa equipe entrará em contato em breve para liberar o acesso."
               className="mb-6"
             />
           )}
@@ -244,15 +243,15 @@ const LoginPage: React.FC = () => {
           {/* Demo Credentials */}
           <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm font-semibold text-blue-800 mb-2">
-              🎯 Demo Account - Try it out!
+              🎯 Conta de Demonstração - Acesse Agora!
             </p>
             <div className="text-sm text-blue-700 space-y-1">
               <p>
-                <span className="font-medium">Email:</span>{" "}
-                demorestaurant@gmail.com
+                <span className="font-medium">E-mail:</span>{" "}
+                contato@cantinhodarose.com.br
               </p>
               <p>
-                <span className="font-medium">Password:</span> ATVSW679
+                <span className="font-medium">Restaurante:</span> Cantinho da Rose
               </p>
             </div>
           </div>
@@ -260,24 +259,24 @@ const LoginPage: React.FC = () => {
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
-              label="Email Address"
+              label="E-mail de Acesso"
               name="email"
               type="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="your@email.com"
+              placeholder="seu@email.com"
               icon={<Mail className="w-5 h-5" />}
               required
               autoComplete="email"
             />
 
             <Input
-              label="Password"
+              label="Senha"
               name="password"
               type="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Enter your password"
+              placeholder="Digite sua senha"
               icon={<Lock className="w-5 h-5" />}
               required
               autoComplete="current-password"
@@ -286,10 +285,10 @@ const LoginPage: React.FC = () => {
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center text-text-secondary">
                 <input type="checkbox" className="mr-2 rounded border-border" />
-                Remember me
+                Lembrar de mim
               </label>
               <a href="#" className="text-accent hover:underline">
-                Forgot password?
+                Esqueceu a senha?
               </a>
             </div>
 
@@ -320,12 +319,12 @@ const LoginPage: React.FC = () => {
 
           {/* Register Link */}
           <div className="mt-6 text-center text-sm text-text-secondary">
-            Don't have an account?{" "}
+            Ainda não tem conta?{" "}
             <Link
               to="/register"
               className="text-accent font-medium hover:underline"
             >
-              Register your restaurant
+              Cadastre seu restaurante
             </Link>
           </div>
 
@@ -336,15 +335,14 @@ const LoginPage: React.FC = () => {
               className="text-sm text-text-secondary hover:text-text flex items-center justify-center"
             >
               <AlertCircle className="w-4 h-4 mr-2" />
-              Admin Login
+              Acesso Administrativo
             </Link>
           </div>
         </Card>
 
         {/* Help Text */}
         <p className="mt-6 text-center text-sm text-text-secondary">
-          Need help? Contact us at support@{APP_CONFIG.appName.toLowerCase()}
-          .com
+          Precisa de ajuda? Suporte via WhatsApp ou e-mail.
         </p>
       </div>
     </div>

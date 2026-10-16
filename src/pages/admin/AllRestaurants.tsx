@@ -235,9 +235,9 @@ const AllRestaurants: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-text mb-2">All Restaurants</h2>
+          <h2 className="text-2xl font-bold text-text mb-2">Todos os Restaurantes</h2>
           <p className="text-text-secondary">
-            Manage all registered restaurants
+            Gerencie todos os restaurantes cadastrados na plataforma
           </p>
         </div>
         <div className="flex items-center space-x-4">
@@ -245,7 +245,7 @@ const AllRestaurants: React.FC = () => {
             {restaurants.length} Total
           </Badge>
           <Badge variant="success" className="text-lg px-4 py-2">
-            {restaurants.filter((r) => r.status === "active").length} Active
+            {restaurants.filter((r) => r.status === "active").length} Ativos
           </Badge>
         </div>
       </div>
@@ -253,7 +253,7 @@ const AllRestaurants: React.FC = () => {
       {/* Real-time indicator */}
       <div className="flex items-center space-x-2 text-sm text-success">
         <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
-        <span>Live updates enabled</span>
+        <span>Atualizações em tempo real ativas</span>
       </div>
 
       {/* Filters */}
@@ -261,7 +261,7 @@ const AllRestaurants: React.FC = () => {
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <Input
-              placeholder="Search by name, owner, phone, or city..."
+              placeholder="Buscar por nome, proprietário, telefone ou cidade..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               icon={<Search className="w-5 h-5" />}
@@ -272,10 +272,10 @@ const AllRestaurants: React.FC = () => {
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               options={[
-                { value: "all", label: "All Status" },
-                { value: "active", label: "Active" },
-                { value: "blocked", label: "Blocked" },
-                { value: "trial", label: "Trial" },
+                { value: "all", label: "Todos os Status" },
+                { value: "active", label: "Ativos" },
+                { value: "blocked", label: "Bloqueados" },
+                { value: "trial", label: "Em Teste" },
               ]}
             />
           </div>
@@ -287,12 +287,12 @@ const AllRestaurants: React.FC = () => {
         <Card className="text-center py-12">
           <StoreIcon className="w-16 h-16 text-text-secondary mx-auto mb-4 opacity-50" />
           <h3 className="text-xl font-semibold text-text mb-2">
-            No Restaurants Found
+            Nenhum restaurante encontrado
           </h3>
           <p className="text-text-secondary">
             {searchTerm || statusFilter !== "all"
-              ? "Try adjusting your filters"
-              : "No restaurants registered yet"}
+              ? "Tente ajustar seus filtros de busca"
+              : "Nenhum restaurante cadastrado ainda"}
           </p>
         </Card>
       ) : (

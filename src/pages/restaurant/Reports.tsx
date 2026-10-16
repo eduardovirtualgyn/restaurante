@@ -121,7 +121,7 @@ const Reports: React.FC = () => {
       // Daily revenue
       const dailyData: Record<string, { revenue: number; orders: number }> = {};
       orders?.forEach((order) => {
-        const date = new Date(order.created_at).toLocaleDateString("en-US", {
+        const date = new Date(order.created_at).toLocaleDateString("pt-BR", {
           month: "short",
           day: "numeric",
         });
