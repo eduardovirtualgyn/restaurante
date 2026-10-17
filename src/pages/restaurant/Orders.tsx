@@ -10,6 +10,7 @@ import {
   RefreshCw,
   MapPin,
   ExternalLink,
+  Printer,
 } from "lucide-react";
 import {
   Card,
@@ -63,6 +64,162 @@ const getOrderTypeLabel = (type: string) => {
     default:
       return type;
   }
+};
+
+export const handlePrintOrder = (order: Order) => {
+  const meta = extractOrderMetadata(order.customer_notes);
+  const printWindow = window.open("", "_blank", "width=380,height=650");
+  if (!printWindow) {
+    alert("Por favor, permita pop-ups no seu navegador para imprimir a comanda.");
+    return;
+  }
+
+  const itemsHtml = (order.items || [])
+    .map(
+      (item: any) => `
+      <div style="margin-bottom: 6px;">
+        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 13px;">
+          <span>${item.quantity}x ${item.name}</span>
+          <span>${formatCurrency(item.item_total || item.subtotal || (item.base_price ? item.base_price * item.quantity : 0))}</span>
+        </div>
+        ${item.size ? `<div style="font-size: 11px; padding-left: 10px; color: #333;">Tamanho: ${item.size}</div>` : ""}
+        ${item.addons && item.addons.length > 0 ? `<div style="font-size: 11px; padding-left: 10px; color: #333;">Adicionais: ${item.addons.join(", ")}</div>` : ""}
+      </div>
+    `
+    )
+    .join("");
+
+  const formattedDate = formatDateTime(order.created_at);
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Comanda #${order.order_number}</title>
+  <style>
+    @page { margin: 0; size: auto; }
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      width: 290px;
+      margin: 0 auto;
+      padding: 12px 10px 24px 10px;
+      color: #000;
+      font-size: 13px;
+      line-height: 1.35;
+      background: #fff;
+    }
+    .text-center { text-align: center; }
+    .bold { font-weight: bold; }
+    .title { font-size: 18px; font-weight: 900; margin-bottom: 2px; }
+    .subtitle { font-size: 11px; text-transform: uppercase; margin-bottom: 6px; }
+    .divider { border-top: 1px dashed #000; margin: 8px 0; }
+    .double-divider { border-top: 2px solid #000; margin: 8px 0; }
+    .order-num { font-size: 21px; font-weight: 900; padding: 4px 0; letter-spacing: 0.5px; }
+    .box-destaque {
+      border: 2px solid #000;
+      padding: 6px 8px;
+      margin: 8px 0;
+      background: #fff;
+    }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 16px;
+      font-weight: 900;
+      padding: 4px 0;
+    }
+    @media print {
+      body { width: 100%; margin: 0; padding: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="text-center">
+    <div class="title">CANTINHO DA ROSE</div>
+    <div class="subtitle">Cardápio Digital & Almoço Executivo</div>
+    <div class="double-divider"></div>
+    <div class="order-num">PEDIDO #${order.order_number}</div>
+    <div style="font-size: 11px;">${formattedDate}</div>
+    <div class="divider"></div>
+  </div>
+
+  <div class="box-destaque">
+    <div class="bold" style="font-size: 11px; text-transform: uppercase;">
+      📍 DESTINO / ENTREGA (PREGAR NA SACOLA):
+    </div>
+    <div class="bold" style="font-size: 14px; margin-top: 3px; word-break: break-word;">
+      ${meta.address ? meta.address : order.table_number || "Retirada no Balcão"}
+    </div>
+    ${order.table_number && meta.address ? `<div style="font-size: 11px; margin-top: 3px; color: #333;">Região: ${order.table_number}</div>` : ""}
+  </div>
+
+  <div style="font-size: 12px; line-height: 1.4;">
+    <div><strong>Cliente:</strong> ${order.customer_name || "Cliente"}</div>
+    <div><strong>WhatsApp:</strong> ${order.customer_phone || "-"}</div>
+    <div><strong>Tipo:</strong> ${getOrderTypeLabel(order.order_type)}</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="bold" style="font-size: 12px; padding: 2px 0;">
+    TALHERES: ${meta.cutlery ? "SIM [COM TALHER E GUARDANAPO]" : "NÃO [SEM TALHER DESCARTÁVEL]"}
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="bold" style="margin-bottom: 6px; font-size: 12px;">ITENS DO PEDIDO:</div>
+  ${itemsHtml}
+
+  <div class="divider"></div>
+
+  <div style="font-size: 12px;">
+    <div style="display: flex; justify-content: space-between;">
+      <span>Subtotal dos Itens:</span>
+      <span>${formatCurrency(order.subtotal)}</span>
+    </div>
+    <div style="display: flex; justify-content: space-between;">
+      <span>Taxa de Entrega:</span>
+      <span>${order.tax > 0 ? formatCurrency(order.tax) : "Grátis (R$ 0,00)"}</span>
+    </div>
+    ${order.discount ? `
+    <div style="display: flex; justify-content: space-between;">
+      <span>Desconto:</span>
+      <span>-${formatCurrency(order.discount)}</span>
+    </div>` : ""}
+  </div>
+
+  <div class="double-divider"></div>
+  <div class="total-row">
+    <span>TOTAL A PAGAR:</span>
+    <span>${formatCurrency(order.total)}</span>
+  </div>
+  <div class="double-divider"></div>
+
+  ${meta.cleanNotes ? `
+  <div style="margin: 6px 0;">
+    <div class="bold" style="font-size: 11px;">OBSERVAÇÕES:</div>
+    <div style="font-size: 12px; font-style: italic;">"${meta.cleanNotes}"</div>
+    <div class="divider"></div>
+  </div>
+  ` : ""}
+
+  <div class="text-center" style="margin-top: 14px; font-size: 11px;">
+    <div>Obrigado pela preferência! ❤️</div>
+    <div>Cantinho da Rose - Comida Caseira com Amor</div>
+  </div>
+
+  <script>
+    window.onload = function() {
+      window.print();
+      setTimeout(function() { window.close(); }, 600);
+    };
+  </script>
+</body>
+</html>`;
+
+  printWindow.document.open();
+  printWindow.document.write(html);
+  printWindow.document.close();
 };
 
 const Orders: React.FC = () => {
@@ -624,6 +781,17 @@ const Orders: React.FC = () => {
                   >
                     Ver Detalhes
                   </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    fullWidth
+                    onClick={() => handlePrintOrder(order)}
+                    className="flex items-center justify-center gap-1.5 border-gray-300 text-gray-700 hover:bg-gray-50 text-xs"
+                    title="Imprimir comanda para grampear na sacola"
+                  >
+                    <Printer className="w-3.5 h-3.5 text-gray-600" />
+                    <span>Imprimir Comanda</span>
+                  </Button>
 
                   {order.status === "pending" && (
                     <>
@@ -932,9 +1100,21 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           </div>
         )}
 
-        <Button onClick={onClose} fullWidth>
-          Fechar
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-2 pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => handlePrintOrder(order)}
+            className="flex items-center justify-center gap-2 border-gray-300 font-bold hover:bg-gray-50 text-gray-800"
+            fullWidth
+          >
+            <Printer className="w-4 h-4 text-gray-700" />
+            Imprimir Comanda (Sacola)
+          </Button>
+          <Button onClick={onClose} fullWidth>
+            Fechar
+          </Button>
+        </div>
       </div>
     </Modal>
   );
