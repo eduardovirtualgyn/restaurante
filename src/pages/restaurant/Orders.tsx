@@ -775,13 +775,15 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             <span>Subtotal</span>
             <span>{formatCurrency(order.subtotal)}</span>
           </div>
-          {order.tax > 0 && (
+          {order.tax !== undefined && order.tax !== null && (
             <div className="flex justify-between text-text-secondary">
               <span>Taxa de Entrega / Serviço</span>
-              <span>{formatCurrency(order.tax)}</span>
+              <span className={order.tax === 0 ? "text-emerald-600 font-medium" : ""}>
+                {order.tax === 0 ? "Grátis (R$ 0,00)" : formatCurrency(order.tax)}
+              </span>
             </div>
           )}
-          {order.discount && order.discount > 0 && (
+          {Boolean(order.discount && order.discount > 0) && (
             <div className="flex justify-between text-success">
               <span>Desconto</span>
               <span>-{formatCurrency(order.discount)}</span>
