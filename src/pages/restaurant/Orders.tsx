@@ -22,6 +22,7 @@ import {
   subscribeToOrders,
   updateOrderStatus,
 } from "../../services/restaurantService";
+import { supabase } from "../../config/supabase";
 import type { Order } from "../../config/supabase";
 import { formatDateTime, formatCurrency, playSound } from "../../utils/helpers";
 
@@ -51,20 +52,68 @@ const Orders: React.FC = () => {
   const [lastUpdatedTime, setLastUpdatedTime] = useState<string>("");
   const prevOrderCountRef = useRef(0);
 
-  // Função auxiliar para carregar pedidos unificados de todas as chaves
-  const loadUnifiedOrders = () => {
+  // Sincroniza pedidos da nuvem (Supabase) mesclando com o cache local
+  const syncOrders = async () => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const restId = user.restaurant_id || "demo-restaurant-123";
     const restSlug = user.restaurant?.slug || "cantinho-da-rose";
 
+    const isUUID =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const finalId = isUUID.test(restId)
+      ? restId
+      : "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
+
+    const orderMap = new Map<string, Order>();
+
+    // 1. Busca pedidos reais direto do Supabase (em tempo real pela nuvem)
+    try {
+      const targetIds = Array.from(
+        new Set([finalId, "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"])
+      );
+      const { data: cloudOrders, error } = await supabase
+        .from("orders")
+        .select("*")
+        .in("restaurant_id", targetIds)
+        .order("created_at", { ascending: false });
+
+      if (!error && Array.isArray(cloudOrders)) {
+        cloudOrders.forEach((ord: any) => {
+          const key = ord.id || ord.order_number;
+          if (key) {
+            let parsedItems = ord.items;
+            if (typeof ord.items === "string") {
+              try {
+                parsedItems = JSON.parse(ord.items);
+              } catch {
+                parsedItems = [];
+              }
+            }
+            const totalNum =
+              typeof ord.total === "string"
+                ? parseFloat(ord.total.replace(",", "."))
+                : Number(ord.total || 0);
+
+            orderMap.set(key, {
+              ...ord,
+              items: Array.isArray(parsedItems) ? parsedItems : [],
+              total: isNaN(totalNum) ? 0 : totalNum,
+            });
+          }
+        });
+      }
+    } catch (e) {
+      console.warn("Aviso ao sincronizar pedidos com Supabase:", e);
+    }
+
+    // 2. Mescla com pedidos do localStorage (pedidos locais não sobrescrevem status da nuvem)
     const keysToCheck = [
+      `orders_${finalId}`,
       `orders_${restId}`,
       restSlug ? `orders_${restSlug}` : null,
       "orders_demo-restaurant-123",
       "orders_cantinho-da-rose",
     ].filter(Boolean) as string[];
-
-    const orderMap = new Map<string, Order>();
 
     keysToCheck.forEach((k) => {
       try {
@@ -93,7 +142,7 @@ const Orders: React.FC = () => {
       currentOrders = [
         {
           id: `ord-${restId}-1`,
-          restaurant_id: restId,
+          restaurant_id: finalId,
           order_number: `PED${Math.floor(100000 + Math.random() * 899999)}`,
           order_type: "phone",
           customer_name: "Mariana Silva",
@@ -125,7 +174,7 @@ const Orders: React.FC = () => {
         },
         {
           id: `ord-${restId}-2`,
-          restaurant_id: restId,
+          restaurant_id: finalId,
           order_number: `PED${Math.floor(100000 + Math.random() * 899999)}`,
           order_type: "table",
           customer_name: "Lucas Medeiros",
@@ -155,25 +204,22 @@ const Orders: React.FC = () => {
           created_at: new Date(Date.now() - 16 * 60000).toISOString(),
         },
       ];
-
-      // Salva nas chaves principais
-      keysToCheck.forEach((k) => {
-        try {
-          localStorage.setItem(k, JSON.stringify(currentOrders));
-        } catch (e) {}
-      });
     }
 
-    return currentOrders;
-  };
-
-  const syncOrders = () => {
-    const unified = loadUnifiedOrders();
+    // Salva a lista consolidada no localStorage para persistência e compartilhamento local
+    keysToCheck.forEach((k) => {
+      try {
+        localStorage.setItem(k, JSON.stringify(currentOrders));
+      } catch (e) {}
+    });
 
     setOrders((prev) => {
       // Se houver mais pedidos do que antes, toca o som de notificação
-      if (unified.length > prevOrderCountRef.current && prevOrderCountRef.current > 0) {
-        const hasNewPending = unified.some(
+      if (
+        currentOrders.length > prevOrderCountRef.current &&
+        prevOrderCountRef.current > 0
+      ) {
+        const hasNewPending = currentOrders.some(
           (uo) =>
             uo.status === "pending" &&
             !prev.some(
@@ -184,8 +230,8 @@ const Orders: React.FC = () => {
           playSound("notification");
         }
       }
-      prevOrderCountRef.current = unified.length;
-      return unified;
+      prevOrderCountRef.current = currentOrders.length;
+      return currentOrders;
     });
 
     setLastUpdatedTime(
@@ -200,10 +246,13 @@ const Orders: React.FC = () => {
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
-    if (!user.restaurant_id) {
-      setLoading(false);
-      return;
-    }
+    const restId = user.restaurant_id || "demo-restaurant-123";
+
+    const isUUID =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const finalId = isUUID.test(restId)
+      ? restId
+      : "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
 
     // 1. Carregamento inicial imediato
     syncOrders();
@@ -221,10 +270,8 @@ const Orders: React.FC = () => {
     // 4. Sincronização via Supabase em tempo real (se configurado)
     let subscription: any = null;
     try {
-      subscription = subscribeToOrders(user.restaurant_id, (data) => {
-        if (data && data.length > 0) {
-          syncOrders();
-        }
+      subscription = subscribeToOrders(finalId, () => {
+        syncOrders();
       });
     } catch (e) {
       console.warn("Supabase real-time subscription skipped:", e);
@@ -254,6 +301,7 @@ const Orders: React.FC = () => {
     });
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+    // 1. Atualização no estado local
     setOrders((prev) => {
       const updated = prev.map((o) =>
         o.id === orderId ? { ...o, status: newStatus as any } : o
@@ -262,7 +310,14 @@ const Orders: React.FC = () => {
       const restId = user.restaurant_id || "demo-restaurant-123";
       const restSlug = user.restaurant?.slug || "cantinho-da-rose";
 
+      const isUUID =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const finalId = isUUID.test(restId)
+        ? restId
+        : "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
+
       const keysToUpdate = [
+        `orders_${finalId}`,
         `orders_${restId}`,
         restSlug ? `orders_${restSlug}` : null,
         "orders_demo-restaurant-123",
@@ -278,6 +333,7 @@ const Orders: React.FC = () => {
       return updated;
     });
 
+    // 2. Atualização no Supabase em nuvem
     try {
       await updateOrderStatus(orderId, newStatus);
     } catch (e) {

@@ -659,6 +659,7 @@ const CustomerMenu: React.FC = () => {
         cart={cart}
         restaurantId={restaurant.id}
         restaurantSlug={restaurant.slug || slug || "cantinho-da-rose"}
+        restaurantPhone={restaurant.phone}
         onClose={() => setShowCheckout(false)}
         onSuccess={() => {
           setCart([]);
@@ -927,6 +928,7 @@ interface CheckoutModalProps {
   cart: CartItem[];
   restaurantId: string;
   restaurantSlug?: string;
+  restaurantPhone?: string;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -936,6 +938,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   cart,
   restaurantId,
   restaurantSlug,
+  restaurantPhone,
   onClose,
   onSuccess,
 }) => {
@@ -976,10 +979,17 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
     setLoading(true);
 
+    const isUUID =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const finalRestaurantId = isUUID.test(restaurantId)
+      ? restaurantId
+      : "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
+
     const orderNumber = `PED${Math.floor(100000 + Math.random() * 899999)}`;
-    const newOrder: any = {
-      id: `ord-${Date.now()}`,
-      restaurant_id: restaurantId,
+
+    // Objeto limpo para o banco de dados Supabase (sem id forçado para gerar UUID)
+    const supabasePayload: any = {
+      restaurant_id: finalRestaurantId,
       order_number: orderNumber,
       order_type: orderType === "table" ? "table" : "phone",
       table_number:
@@ -1004,12 +1014,32 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
       total,
       status: "pending",
       customer_notes: notes.trim(),
+    };
+
+    let createdId = `ord-${Date.now()}`;
+
+    // 1. Tenta enviar para o Supabase em nuvem
+    try {
+      const { data: created, error } = await createOrder(supabasePayload);
+      if (error) {
+        console.error("Erro ao inserir pedido no Supabase:", error);
+      } else if (created && created.id) {
+        createdId = created.id;
+      }
+    } catch (e) {
+      console.warn("Supabase createOrder skipped:", e);
+    }
+
+    const newOrder = {
+      ...supabasePayload,
+      id: createdId,
       created_at: new Date().toISOString(),
     };
 
-    // 1. Salva localmente em todas as chaves pertinentes para garantir sincronização no painel
+    // 2. Salva localmente em todas as chaves pertinentes para garantir sincronização no painel
     const keysToSave = [
       `orders_${restaurantId}`,
+      `orders_${finalRestaurantId}`,
       `orders_${restaurantSlug || "cantinho-da-rose"}`,
       "orders_demo-restaurant-123",
       "orders_cantinho-da-rose",
@@ -1030,13 +1060,6 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
     window.dispatchEvent(new Event("storage"));
     window.dispatchEvent(new Event("local-data-updated"));
-
-    // 2. Tenta enviar para o Supabase se conectado
-    try {
-      await createOrder(newOrder);
-    } catch (e) {
-      console.warn("Supabase createOrder skipped:", e);
-    }
 
     setPlacedOrder(newOrder);
     setLoading(false);
@@ -1060,12 +1083,16 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
       total
     )}${notes ? `\n• *Observações:* ${notes}` : ""}\n\n_Pedido gerado via Cardápio Digital._`;
 
-    // Busca telefone do restaurante no localStorage
+    // Busca telefone do restaurante (prop prioritária ou localStorage)
     const custom = JSON.parse(
       localStorage.getItem("custom_restaurants") || "[]"
     );
     const rest = custom.find((r: any) => r.id === restaurantId);
-    const phone = rest?.phone ? rest.phone.replace(/\D/g, "") : "";
+    const rawPhone =
+      restaurantPhone ||
+      (rest?.phone ? rest.phone : "") ||
+      "";
+    const phone = rawPhone.replace(/\D/g, "");
     const fullPhone = phone.startsWith("55") ? phone : phone ? `55${phone}` : "";
 
     const url = fullPhone

@@ -21,6 +21,12 @@ export const subscribeToOrders = (
   restaurantId: string,
   callback: (orders: Order[]) => void
 ) => {
+  const isUUID =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const finalId = isUUID.test(restaurantId)
+    ? restaurantId
+    : "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
+
   const fetchOrders = async () => {
     if (!isSupabaseLive()) {
       try {
@@ -34,14 +40,18 @@ export const subscribeToOrders = (
       return;
     }
 
-    const { data, error } = await supabase
-      .from("orders")
-      .select("*")
-      .eq("restaurant_id", restaurantId)
-      .order("created_at", { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("restaurant_id", finalId)
+        .order("created_at", { ascending: false });
 
-    if (!error && data) {
-      callback(data);
+      if (!error && data) {
+        callback(data);
+      }
+    } catch (e) {
+      console.warn("Erro ao buscar pedidos no Supabase:", e);
     }
   };
 
@@ -60,14 +70,14 @@ export const subscribeToOrders = (
   }
 
   const subscription = supabase
-    .channel(`restaurant-orders-${restaurantId}`)
+    .channel(`restaurant-orders-${finalId}`)
     .on(
       "postgres_changes",
       {
         event: "*",
         schema: "public",
         table: "orders",
-        filter: `restaurant_id=eq.${restaurantId}`,
+        filter: `restaurant_id=eq.${finalId}`,
       },
       () => {
         fetchOrders();
@@ -94,7 +104,21 @@ export const updateOrderStatus = async (
     updateData.payment_transaction_id = paymentData.transactionId;
   }
 
+  if (status === "accepted") {
+    updateData.accepted_at = new Date().toISOString();
+  } else if (status === "completed") {
+    updateData.completed_at = new Date().toISOString();
+  } else if (status === "cancelled" || status === "rejected") {
+    updateData.cancelled_at = new Date().toISOString();
+  }
+
   if (!isSupabaseLive()) {
+    return true;
+  }
+
+  const isUUID =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!isUUID.test(orderId)) {
     return true;
   }
 
@@ -244,9 +268,19 @@ export const deleteMenuItem = async (itemId: string) => {
 
 // Create order (manual or from customer)
 export const createOrder = async (order: Partial<Order>) => {
+  const isUUID =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const safeOrder: any = { ...order };
+  if (!safeOrder.restaurant_id || !isUUID.test(safeOrder.restaurant_id)) {
+    safeOrder.restaurant_id = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
+  }
+  if (safeOrder.id && !isUUID.test(safeOrder.id)) {
+    delete safeOrder.id;
+  }
+
   const { data, error } = await supabase
     .from("orders")
-    .insert([order])
+    .insert([safeOrder])
     .select()
     .single();
 
@@ -256,6 +290,12 @@ export const createOrder = async (order: Partial<Order>) => {
 // Get restaurant stats
 export const getRestaurantStats = async (restaurantId: string) => {
   try {
+    const isUUID =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const finalId = isUUID.test(restaurantId)
+      ? restaurantId
+      : "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -267,17 +307,17 @@ export const getRestaurantStats = async (restaurantId: string) => {
       supabase
         .from("orders")
         .select("total, status")
-        .eq("restaurant_id", restaurantId)
+        .eq("restaurant_id", finalId)
         .gte("created_at", today.toISOString()),
       supabase
         .from("orders")
         .select("*")
-        .eq("restaurant_id", restaurantId)
+        .eq("restaurant_id", finalId)
         .eq("status", "pending"),
       supabase
         .from("orders")
         .select("*", { count: "exact", head: true })
-        .eq("restaurant_id", restaurantId),
+        .eq("restaurant_id", finalId),
     ]);
 
     const completedToday =

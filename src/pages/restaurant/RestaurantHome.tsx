@@ -12,6 +12,7 @@ import {
 import { Card, Badge, Loading, Button } from "../../components/ui";
 import { getRestaurantStats } from "../../services/restaurantService";
 import { formatCurrency, copyToClipboard } from "../../utils/helpers";
+import { supabase } from "../../config/supabase";
 
 const RestaurantHome: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
@@ -33,23 +34,67 @@ const RestaurantHome: React.FC = () => {
 
   const loadStats = async () => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
-    if (!user.restaurant_id) {
-      setLoading(false);
-      return;
-    }
+    const restId = user.restaurant_id || "demo-restaurant-123";
+    const restSlug = user.restaurant?.slug || "cantinho-da-rose";
+
+    const isUUID =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const finalId = isUUID.test(restId)
+      ? restId
+      : "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
 
     try {
-      const restId = user.restaurant_id || "demo-restaurant-123";
-      const restSlug = user.restaurant?.slug || "cantinho-da-rose";
+      const orderMap = new Map<string, any>();
 
+      // 1. Busca pedidos reais do Supabase em nuvem
+      try {
+        const targetIds = Array.from(
+          new Set([finalId, "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"])
+        );
+        const { data: cloudOrders } = await supabase
+          .from("orders")
+          .select("*")
+          .in("restaurant_id", targetIds)
+          .order("created_at", { ascending: false });
+
+        if (Array.isArray(cloudOrders)) {
+          cloudOrders.forEach((ord: any) => {
+            const key = ord.id || ord.order_number;
+            if (key) {
+              let parsedItems = ord.items;
+              if (typeof ord.items === "string") {
+                try {
+                  parsedItems = JSON.parse(ord.items);
+                } catch {
+                  parsedItems = [];
+                }
+              }
+              const totalNum =
+                typeof ord.total === "string"
+                  ? parseFloat(ord.total.replace(",", "."))
+                  : Number(ord.total || 0);
+
+              orderMap.set(key, {
+                ...ord,
+                items: Array.isArray(parsedItems) ? parsedItems : [],
+                total: isNaN(totalNum) ? 0 : totalNum,
+              });
+            }
+          });
+        }
+      } catch (e) {
+        console.warn("Aviso ao buscar pedidos no Supabase na home:", e);
+      }
+
+      // 2. Mescla com pedidos do localStorage
       const keysToCheck = [
+        `orders_${finalId}`,
         `orders_${restId}`,
         restSlug ? `orders_${restSlug}` : null,
         "orders_demo-restaurant-123",
         "orders_cantinho-da-rose",
       ].filter(Boolean) as string[];
 
-      const orderMap = new Map<string, any>();
       keysToCheck.forEach((k) => {
         try {
           const raw = localStorage.getItem(k);
@@ -85,7 +130,7 @@ const RestaurantHome: React.FC = () => {
 
       let data: any = null;
       try {
-        data = await getRestaurantStats(restId);
+        data = await getRestaurantStats(finalId);
       } catch (e) {}
 
       setStats({
@@ -93,7 +138,7 @@ const RestaurantHome: React.FC = () => {
           data?.pendingOrders > 0 ? data.pendingOrders : localPending,
         todayOrders: (data?.completedToday || 0) + (saved.length || 0),
         todayRevenue: (data?.revenueToday || 0) + (localTodayRevenue || 0),
-        totalMenuItems: localMenu.length || 4,
+        totalMenuItems: localMenu.length || 9,
         recentOrders:
           saved.length > 0
             ? saved.slice(0, 5)
