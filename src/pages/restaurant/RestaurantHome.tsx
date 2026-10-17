@@ -16,6 +16,7 @@ import { formatCurrency, copyToClipboard } from "../../utils/helpers";
 const RestaurantHome: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     loadStats();
@@ -152,7 +153,6 @@ const RestaurantHome: React.FC = () => {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const slug = user.restaurant?.slug || "cantinho-da-rose";
   const menuUrl = `${window.location.origin}/menu/${slug}`;
-  const [copied, setCopied] = useState(false);
 
   const handleCopyLink = () => {
     copyToClipboard(menuUrl);
