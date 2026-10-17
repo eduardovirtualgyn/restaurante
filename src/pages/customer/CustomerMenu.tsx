@@ -35,6 +35,7 @@ import {
   normalizeItemShift,
 } from "../../data/defaultMenu";
 import { APP_CONFIG } from "../../config/config";
+import roseBrandLogo from "../../assets/cantinho_da_rose_logo.png";
 
 interface CartItem extends MenuItem {
   quantity: number;
@@ -189,7 +190,7 @@ const CustomerMenu: React.FC = () => {
         slug: slug || "cantinho-da-rose",
         restaurant_type: "Marmitaria Executiva & Comida Afetiva",
         is_active: true,
-        logo_url: "/images/cantinho_da_rose_logo.png",
+        logo_url: roseBrandLogo || "/images/cantinho_da_rose_logo.png",
       });
       const savedDemo = localStorage.getItem(`menu_${demoId}`);
       if (savedDemo !== null) {
@@ -448,9 +449,12 @@ const CustomerMenu: React.FC = () => {
             <div className="flex items-center gap-3">
               <div className="relative flex-shrink-0">
                 <img
-                  src={restaurant.logo_url || "/images/cantinho_da_rose_logo.png"}
+                  src={roseBrandLogo || restaurant.logo_url}
                   alt={restaurant.name}
                   className="w-12 h-12 rounded-full object-cover shadow-sm border-2 border-amber-400 bg-amber-50"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/images/cantinho_da_rose_logo.png";
+                  }}
                 />
               </div>
               <div>
@@ -522,9 +526,12 @@ const CustomerMenu: React.FC = () => {
             <div className="flex-shrink-0 relative group">
               <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden shadow-2xl border-2 border-amber-300/80 bg-gradient-to-b from-white/20 to-white/5 backdrop-blur-sm p-1 transition-transform duration-300 group-hover:scale-105">
                 <img
-                  src="/images/cantinho_da_rose_logo.png"
+                  src={roseBrandLogo}
                   alt="Cantinho da Rose - Comida Caseira"
                   className="w-full h-full object-cover rounded-xl"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/images/cantinho_da_rose_logo.png";
+                  }}
                 />
               </div>
               <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-amber-400 text-amber-950 font-black text-[9px] sm:text-[10px] px-2.5 py-0.5 rounded-full shadow-md uppercase tracking-wider whitespace-nowrap">
