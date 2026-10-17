@@ -7,6 +7,7 @@ import {
   Phone,
   User,
   MessageSquare,
+  RefreshCw,
 } from "lucide-react";
 import {
   Card,
@@ -45,36 +46,54 @@ const Orders: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string>("pending");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdatedTime, setLastUpdatedTime] = useState<string>("");
   const prevOrderCountRef = useRef(0);
 
-  useEffect(() => {
+  // Função auxiliar para carregar pedidos unificados de todas as chaves
+  const loadUnifiedOrders = () => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
-    if (!user.restaurant_id) {
-      setLoading(false);
-      return;
-    }
+    const restId = user.restaurant_id || "demo-restaurant-123";
+    const restSlug = user.restaurant?.slug || "cantinho-da-rose";
 
-    const localOrdersKey = `orders_${user.restaurant_id}`;
-    let currentOrders: Order[] = [];
+    const keysToCheck = [
+      `orders_${restId}`,
+      restSlug ? `orders_${restSlug}` : null,
+      "orders_demo-restaurant-123",
+      "orders_cantinho-da-rose",
+    ].filter(Boolean) as string[];
 
-    // 1. Try reading saved orders from localStorage
-    const saved = localStorage.getItem(localOrdersKey);
-    if (saved) {
+    const orderMap = new Map<string, Order>();
+
+    keysToCheck.forEach((k) => {
       try {
-        currentOrders = JSON.parse(saved);
+        const raw = localStorage.getItem(k);
+        if (raw) {
+          const list = JSON.parse(raw);
+          if (Array.isArray(list)) {
+            list.forEach((ord: Order) => {
+              const uniqueKey = ord.id || ord.order_number;
+              if (uniqueKey && !orderMap.has(uniqueKey)) {
+                orderMap.set(uniqueKey, ord);
+              }
+            });
+          }
+        }
       } catch (e) {
-        console.warn("Erro ao carregar pedidos locais:", e);
+        console.warn("Erro ao ler chave de pedidos:", k, e);
       }
-    }
+    });
 
-    // 2. If no saved orders exist, seed initial realistic orders for testing
+    let currentOrders = Array.from(orderMap.values());
+
+    // Se ainda não houver nenhum pedido, cria pedidos de demonstração realistas
     if (currentOrders.length === 0) {
-      const restName = user.restaurant?.name || "Restaurante";
+      const restName = user.restaurant?.name || "Cantinho da Rose";
       currentOrders = [
         {
-          id: `ord-${user.restaurant_id}-1`,
-          restaurant_id: user.restaurant_id,
+          id: `ord-${restId}-1`,
+          restaurant_id: restId,
           order_number: `PED${Math.floor(100000 + Math.random() * 899999)}`,
           order_type: "phone",
           customer_name: "Mariana Silva",
@@ -83,7 +102,7 @@ const Orders: React.FC = () => {
           items: [
             {
               menu_item_id: "item-1",
-              name: `Prato Especial do ${restName}`,
+              name: `Marmita Executiva do ${restName}`,
               quantity: 2,
               base_price: 36.9,
               item_total: 73.8,
@@ -101,12 +120,12 @@ const Orders: React.FC = () => {
           tax: 0,
           total: 91.8,
           status: "pending",
-          customer_notes: "Sem cebola em um dos pratos, por favor. Pagamento via Pix.",
+          customer_notes: "Sem cebola em um dos pratos. Pagamento via Pix.",
           created_at: new Date(Date.now() - 4 * 60000).toISOString(),
         },
         {
-          id: `ord-${user.restaurant_id}-2`,
-          restaurant_id: user.restaurant_id,
+          id: `ord-${restId}-2`,
+          restaurant_id: restId,
           order_number: `PED${Math.floor(100000 + Math.random() * 899999)}`,
           order_type: "table",
           customer_name: "Lucas Medeiros",
@@ -122,61 +141,115 @@ const Orders: React.FC = () => {
             },
             {
               menu_item_id: "item-4",
-              name: "Refrigerante Lata 350ml",
-              quantity: 2,
-              base_price: 6.5,
-              item_total: 13.0,
+              name: "Guaraná Antarctica 2L",
+              quantity: 1,
+              base_price: 14.0,
+              item_total: 14.0,
             },
           ],
-          subtotal: 37.0,
+          subtotal: 38.0,
           tax: 0,
-          total: 37.0,
+          total: 38.0,
           status: "accepted",
-          customer_notes: "Trazer gelo e limão para as bebidas.",
+          customer_notes: "Trazer gelo e copos.",
           created_at: new Date(Date.now() - 16 * 60000).toISOString(),
         },
       ];
-      localStorage.setItem(localOrdersKey, JSON.stringify(currentOrders));
-    }
 
-    setOrders(currentOrders);
-    setLoading(false);
-
-    // 3. Optional Supabase real-time sync if online
-    try {
-      const subscription = subscribeToOrders(user.restaurant_id, (data) => {
-        if (data && data.length > 0) {
-          if (data.length > prevOrderCountRef.current) {
-            const newOrders = data.filter(
-              (order) =>
-                order.status === "pending" &&
-                !orders.find((o) => o.id === order.id)
-            );
-            if (newOrders.length > 0) {
-              playSound("notification");
-            }
-          }
-          prevOrderCountRef.current = data.length;
-          setOrders(data);
-          localStorage.setItem(localOrdersKey, JSON.stringify(data));
-        }
-        setLoading(false);
+      // Salva nas chaves principais
+      keysToCheck.forEach((k) => {
+        try {
+          localStorage.setItem(k, JSON.stringify(currentOrders));
+        } catch (e) {}
       });
-
-      return () => {
-        subscription?.unsubscribe?.();
-      };
-    } catch (e) {
-      console.warn("Supabase subscription skipped:", e);
-      setLoading(false);
     }
+
+    return currentOrders;
+  };
+
+  const syncOrders = () => {
+    const unified = loadUnifiedOrders();
+
+    setOrders((prev) => {
+      // Se houver mais pedidos do que antes, toca o som de notificação
+      if (unified.length > prevOrderCountRef.current && prevOrderCountRef.current > 0) {
+        const hasNewPending = unified.some(
+          (uo) =>
+            uo.status === "pending" &&
+            !prev.some(
+              (po) => (po.id || po.order_number) === (uo.id || uo.order_number)
+            )
+        );
+        if (hasNewPending) {
+          playSound("notification");
+        }
+      }
+      prevOrderCountRef.current = unified.length;
+      return unified;
+    });
+
+    setLastUpdatedTime(
+      new Date().toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+    );
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (!user.restaurant_id) {
+      setLoading(false);
+      return;
+    }
+
+    // 1. Carregamento inicial imediato
+    syncOrders();
+
+    // 2. Polling contínuo em tempo real a cada 2.5 segundos
+    const pollInterval = setInterval(() => {
+      syncOrders();
+    }, 2500);
+
+    // 3. Ouvintes de eventos locais entre abas
+    const handleStorageChange = () => syncOrders();
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("local-data-updated", handleStorageChange);
+
+    // 4. Sincronização via Supabase em tempo real (se configurado)
+    let subscription: any = null;
+    try {
+      subscription = subscribeToOrders(user.restaurant_id, (data) => {
+        if (data && data.length > 0) {
+          syncOrders();
+        }
+      });
+    } catch (e) {
+      console.warn("Supabase real-time subscription skipped:", e);
+    }
+
+    return () => {
+      clearInterval(pollInterval);
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("local-data-updated", handleStorageChange);
+      subscription?.unsubscribe?.();
+    };
   }, []);
 
+  const handleManualRefresh = () => {
+    setIsRefreshing(true);
+    syncOrders();
+    setTimeout(() => setIsRefreshing(false), 500);
+  };
+
+  // Ordena SEMPRE os mais recentes primeiro
   const filteredOrders = orders
-    .filter((order) => order.status === statusFilter)
+    .filter((order) => statusFilter === "all" || order.status === statusFilter)
     .sort((a, b) => {
       return (
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
     });
 
@@ -186,9 +259,22 @@ const Orders: React.FC = () => {
         o.id === orderId ? { ...o, status: newStatus as any } : o
       );
       const user = JSON.parse(localStorage.getItem("user") || "{}");
-      if (user.restaurant_id) {
-        localStorage.setItem(`orders_${user.restaurant_id}`, JSON.stringify(updated));
-      }
+      const restId = user.restaurant_id || "demo-restaurant-123";
+      const restSlug = user.restaurant?.slug || "cantinho-da-rose";
+
+      const keysToUpdate = [
+        `orders_${restId}`,
+        restSlug ? `orders_${restSlug}` : null,
+        "orders_demo-restaurant-123",
+        "orders_cantinho-da-rose",
+      ].filter(Boolean) as string[];
+
+      keysToUpdate.forEach((k) => {
+        try {
+          localStorage.setItem(k, JSON.stringify(updated));
+        } catch (e) {}
+      });
+
       return updated;
     });
 
@@ -247,51 +333,85 @@ const Orders: React.FC = () => {
   }
 
   const pendingCount = orders.filter((o) => o.status === "pending").length;
+  const acceptedCount = orders.filter((o) => o.status === "accepted").length;
+  const completedCount = orders.filter((o) => o.status === "completed").length;
 
   const statusFilters = [
-    { key: "pending", label: "Pendentes" },
-    { key: "accepted", label: "Em Preparo" },
-    { key: "completed", label: "Concluídos" },
-    { key: "cancelled", label: "Cancelados" },
+    { key: "all", label: "Todos os Pedidos", count: orders.length },
+    { key: "pending", label: "Pendentes", count: pendingCount },
+    { key: "accepted", label: "Em Preparo", count: acceptedCount },
+    { key: "completed", label: "Concluídos", count: completedCount },
+    { key: "cancelled", label: "Cancelados", count: orders.filter((o) => o.status === "cancelled" || o.status === "rejected").length },
   ];
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-text mb-2">Gestão de Pedidos</h2>
+          <h2 className="text-2xl font-bold text-text mb-1">Gestão de Pedidos</h2>
           <p className="text-text-secondary">
             Gerencie e acompanhe todos os pedidos do seu restaurante em tempo real
           </p>
         </div>
-        {pendingCount > 0 && (
-          <Badge variant="warning" className="text-lg px-4 py-2 animate-pulse">
-            {pendingCount} {pendingCount === 1 ? "Pendente" : "Pendentes"}
-          </Badge>
-        )}
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleManualRefresh}
+            className="flex items-center gap-2 bg-white"
+          >
+            <RefreshCw
+              className={`w-4 h-4 ${isRefreshing ? "animate-spin text-accent" : ""}`}
+            />
+            <span>{isRefreshing ? "Atualizando..." : "Atualizar Agora"}</span>
+          </Button>
+
+          {pendingCount > 0 && (
+            <Badge variant="warning" className="text-base px-3.5 py-1.5 animate-pulse font-bold">
+              {pendingCount} {pendingCount === 1 ? "Pendente" : "Pendentes"}
+            </Badge>
+          )}
+        </div>
       </div>
 
-      {/* Real-time indicator */}
-      <div className="flex items-center space-x-2 text-sm text-success">
-        <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
-        <span>Atualizações automáticas ativas • Alertas sonoros habilitados</span>
+      {/* Real-time indicator & sync bar */}
+      <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-emerald-50/80 border border-emerald-200/60 rounded-xl text-xs text-emerald-800">
+        <div className="flex items-center space-x-2">
+          <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping" />
+          <span className="font-semibold">Sincronização em Tempo Real Ativa</span>
+          <span className="hidden sm:inline text-emerald-600">• Verificando a cada 2.5s</span>
+          <span className="hidden sm:inline text-emerald-600">• Alertas sonoros habilitados</span>
+        </div>
+        {lastUpdatedTime && (
+          <span className="text-emerald-700/80">
+            Última verificação: {lastUpdatedTime}
+          </span>
+        )}
       </div>
 
       {/* Status Filter */}
       <div className="flex flex-wrap gap-2">
-        {statusFilters.map(({ key, label }) => (
+        {statusFilters.map(({ key, label, count }) => (
           <button
             key={key}
             onClick={() => setStatusFilter(key)}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${
               statusFilter === key
-                ? "bg-accent text-white"
-                : "bg-bg-subtle text-text-secondary hover:bg-border"
+                ? "bg-accent text-white shadow-sm font-semibold"
+                : "bg-bg-subtle text-text-secondary hover:bg-border/60 hover:text-text"
             }`}
           >
-            {label}
-            {key === "pending" && ` (${pendingCount})`}
+            <span>{label}</span>
+            <span
+              className={`text-xs px-2 py-0.5 rounded-full ${
+                statusFilter === key
+                  ? "bg-white/20 text-white font-bold"
+                  : "bg-gray-200/70 text-gray-700 font-semibold"
+              }`}
+            >
+              {count}
+            </span>
           </button>
         ))}
       </div>

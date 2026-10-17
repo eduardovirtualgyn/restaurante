@@ -19,72 +19,93 @@ const RestaurantHome: React.FC = () => {
 
   useEffect(() => {
     loadStats();
+    const interval = setInterval(loadStats, 3000);
+    window.addEventListener("storage", loadStats);
+    window.addEventListener("local-data-updated", loadStats);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("storage", loadStats);
+      window.removeEventListener("local-data-updated", loadStats);
+    };
   }, []);
 
   const loadStats = async () => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
-    if (!user.restaurant_id) return;
-
-    if (user.restaurant_id === "demo-restaurant-123") {
-      setStats({
-        pendingOrders: 2,
-        todayOrders: 19,
-        todayRevenue: 1580.4,
-        totalMenuItems: 12,
-        recentOrders: [
-          {
-            id: "ord-1",
-            order_number: "PED849201",
-            order_type: "Delivery",
-            items: [{}, {}],
-            total: 82.5,
-            status: "pending",
-          },
-          {
-            id: "ord-2",
-            order_number: "PED849198",
-            order_type: "Mesa 04",
-            items: [{}, {}, {}],
-            total: 114.9,
-            status: "pending",
-          },
-          {
-            id: "ord-3",
-            order_number: "PED849182",
-            order_type: "Delivery",
-            items: [{}],
-            total: 45.9,
-            status: "completed",
-          },
-        ],
-      });
+    if (!user.restaurant_id) {
       setLoading(false);
       return;
     }
 
     try {
-      const localOrdersKey = `orders_${user.restaurant_id}`;
-      const saved = JSON.parse(localStorage.getItem(localOrdersKey) || "[]");
-      const localPending = saved.filter((o: any) => o.status === "pending").length;
-      const localTodayRevenue = saved.reduce((acc: number, o: any) => acc + (o.total || 0), 0);
-      const localMenu = JSON.parse(localStorage.getItem(`menu_${user.restaurant_id}`) || "[]");
+      const restId = user.restaurant_id || "demo-restaurant-123";
+      const restSlug = user.restaurant?.slug || "cantinho-da-rose";
 
-      const data = await getRestaurantStats(user.restaurant_id);
+      const keysToCheck = [
+        `orders_${restId}`,
+        restSlug ? `orders_${restSlug}` : null,
+        "orders_demo-restaurant-123",
+        "orders_cantinho-da-rose",
+      ].filter(Boolean) as string[];
+
+      const orderMap = new Map<string, any>();
+      keysToCheck.forEach((k) => {
+        try {
+          const raw = localStorage.getItem(k);
+          if (raw) {
+            const list = JSON.parse(raw);
+            if (Array.isArray(list)) {
+              list.forEach((ord: any) => {
+                const uniqueKey = ord.id || ord.order_number;
+                if (uniqueKey && !orderMap.has(uniqueKey)) {
+                  orderMap.set(uniqueKey, ord);
+                }
+              });
+            }
+          }
+        } catch (e) {
+          console.warn("Erro ao ler pedidos no dashboard:", k, e);
+        }
+      });
+
+      const saved = Array.from(orderMap.values()).sort(
+        (a: any, b: any) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      const localPending = saved.filter((o: any) => o.status === "pending").length;
+      const localTodayRevenue = saved.reduce(
+        (acc: number, o: any) => acc + (o.total || 0),
+        0
+      );
+      const localMenu = JSON.parse(
+        localStorage.getItem(`menu_${restId}`) || "[]"
+      );
+
+      let data: any = null;
+      try {
+        data = await getRestaurantStats(restId);
+      } catch (e) {}
+
       setStats({
-        pendingOrders: data?.pendingOrders > 0 ? data.pendingOrders : localPending,
+        pendingOrders:
+          data?.pendingOrders > 0 ? data.pendingOrders : localPending,
         todayOrders: (data?.completedToday || 0) + (saved.length || 0),
         todayRevenue: (data?.revenueToday || 0) + (localTodayRevenue || 0),
         totalMenuItems: localMenu.length || 4,
-        recentOrders: saved.length > 0 ? saved.slice(0, 5) : [
-          {
-            id: "ord-1",
-            order_number: "PED849201",
-            order_type: "Delivery",
-            items: [{}, {}],
-            total: 91.8,
-            status: "pending",
-          },
-        ],
+        recentOrders:
+          saved.length > 0
+            ? saved.slice(0, 5)
+            : [
+                {
+                  id: "ord-1",
+                  order_number: "PED849201",
+                  order_type: "Delivery",
+                  items: [{}, {}],
+                  total: 91.8,
+                  status: "pending",
+                },
+              ],
       });
     } catch (e) {
       console.warn("Fallback to local restaurant stats:", e);

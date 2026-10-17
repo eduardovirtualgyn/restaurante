@@ -654,6 +654,7 @@ const CustomerMenu: React.FC = () => {
         isOpen={showCheckout}
         cart={cart}
         restaurantId={restaurant.id}
+        restaurantSlug={restaurant.slug || slug || "cantinho-da-rose"}
         onClose={() => setShowCheckout(false)}
         onSuccess={() => {
           setCart([]);
@@ -921,6 +922,7 @@ interface CheckoutModalProps {
   isOpen: boolean;
   cart: CartItem[];
   restaurantId: string;
+  restaurantSlug?: string;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -929,6 +931,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   isOpen,
   cart,
   restaurantId,
+  restaurantSlug,
   onClose,
   onSuccess,
 }) => {
@@ -1000,15 +1003,27 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
       created_at: new Date().toISOString(),
     };
 
-    // 1. Salva localmente para refletir instantaneamente no painel do restaurante
-    const localOrdersKey = `orders_${restaurantId}`;
-    const prevOrders = JSON.parse(
-      localStorage.getItem(localOrdersKey) || "[]"
-    );
-    localStorage.setItem(
-      localOrdersKey,
-      JSON.stringify([newOrder, ...prevOrders])
-    );
+    // 1. Salva localmente em todas as chaves pertinentes para garantir sincronização no painel
+    const keysToSave = [
+      `orders_${restaurantId}`,
+      `orders_${restaurantSlug || "cantinho-da-rose"}`,
+      "orders_demo-restaurant-123",
+      "orders_cantinho-da-rose",
+    ];
+
+    keysToSave.forEach((k) => {
+      try {
+        const prev = JSON.parse(localStorage.getItem(k) || "[]");
+        const filtered = prev.filter(
+          (p: any) =>
+            p.order_number !== newOrder.order_number && p.id !== newOrder.id
+        );
+        localStorage.setItem(k, JSON.stringify([newOrder, ...filtered]));
+      } catch (e) {
+        console.warn(`Erro ao salvar na chave ${k}:`, e);
+      }
+    });
+
     window.dispatchEvent(new Event("storage"));
     window.dispatchEvent(new Event("local-data-updated"));
 
