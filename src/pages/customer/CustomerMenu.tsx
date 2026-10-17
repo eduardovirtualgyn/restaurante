@@ -10,6 +10,7 @@ import {
   Package,
   Copy,
   Check,
+  ArrowRight,
 } from "lucide-react";
 import {
   Card,
@@ -440,7 +441,7 @@ const CustomerMenu: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-28">
       {/* Header */}
       <div className="bg-white shadow-sm sticky top-0 z-40 border-b border-gray-100">
         <div className="max-w-screen-lg mx-auto px-4 py-3">
@@ -849,31 +850,48 @@ const CustomerMenu: React.FC = () => {
         }}
       />
 
-      {/* Bottom Cart Bar */}
+      {/* Bottom Cart Floating Bar */}
       {cartCount > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-accent text-white shadow-[0_-2px_20px_rgba(0,0,0,0.15)] z-40">
-          <button
-            onClick={() => setShowCart(true)}
-            className="max-w-screen-lg mx-auto w-full px-4 py-3.5 flex items-center justify-between"
-          >
-            <div className="flex items-center gap-3">
-              <div className="bg-white text-accent font-bold text-sm w-6 h-6 rounded flex items-center justify-center">
-                {cartCount}
+        <div className="fixed bottom-0 left-0 right-0 z-50 p-3 sm:p-4 bg-gradient-to-t from-black/40 via-black/10 to-transparent pointer-events-none">
+          <div className="max-w-md sm:max-w-lg mx-auto pointer-events-auto">
+            <button
+              onClick={() => setShowCart(true)}
+              className="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] transition-all duration-200 text-white p-3 sm:p-3.5 rounded-2xl shadow-2xl flex items-center justify-between border-2 border-emerald-400/50 group cursor-pointer"
+              title="Clique para ver sua sacola e avançar para o pagamento"
+            >
+              {/* Informações dos Itens e Valor Total */}
+              <div className="flex items-center gap-3 text-left">
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-xl bg-white text-emerald-800 font-black text-base flex items-center justify-center shadow-md">
+                    {cartCount}
+                  </div>
+                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-300"></span>
+                  </span>
+                </div>
+                <div>
+                  <div className="text-[11px] font-bold text-emerald-100 uppercase tracking-wider">
+                    {cartCount === 1 ? "1 item na sacola" : `${cartCount} itens na sacola`}
+                  </div>
+                  <div className="text-lg sm:text-xl font-black text-white leading-tight">
+                    {formatCurrency(
+                      cart.reduce(
+                        (sum, item) => sum + item.itemTotal * item.quantity,
+                        0
+                      )
+                    )}
+                  </div>
+                </div>
               </div>
-              <span className="font-bold text-base">
-                {formatCurrency(
-                  cart.reduce(
-                    (sum, item) => sum + item.itemTotal * item.quantity,
-                    0
-                  )
-                )}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 font-semibold text-sm">
-              <span>Ver Pedido</span>
-              <span className="text-lg">›</span>
-            </div>
-          </button>
+
+              {/* Botão de Ação Claro e Inequívoco de Avançar */}
+              <div className="flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-md uppercase tracking-wide group-hover:scale-105 transition-all">
+                <span>AVANÇAR PEDIDO</span>
+                <ArrowRight className="w-4 h-4 stroke-[3] group-hover:translate-x-1 transition-transform" />
+              </div>
+            </button>
+          </div>
         </div>
       )}
     </div>
