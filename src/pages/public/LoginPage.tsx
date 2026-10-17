@@ -179,10 +179,10 @@ const LoginPage: React.FC = () => {
     localStorage.setItem(
       "user",
       JSON.stringify({
-        id: "demo-restaurant-123",
+        id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
         email: "contato@cantinhodarose.com.br",
         role: "owner",
-        restaurant_id: "demo-restaurant-123",
+        restaurant_id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
         restaurant: {
           name: "Cantinho da Rose - Marmitaria Executiva",
           slug: "cantinho-da-rose",

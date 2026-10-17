@@ -62,7 +62,7 @@ const AllRestaurants: React.FC = () => {
       );
       const defaultRestaurants: Restaurant[] = [
         {
-          id: "demo-restaurant-123",
+          id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
           name: "Cantinho da Rose - Marmitaria Executiva",
           slug: "cantinho-da-rose",
           owner_name: "Rose",
