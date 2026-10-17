@@ -8,6 +8,8 @@ import {
   User,
   MessageSquare,
   RefreshCw,
+  MapPin,
+  ExternalLink,
 } from "lucide-react";
 import {
   Card,
@@ -25,6 +27,28 @@ import {
 import { supabase } from "../../config/supabase";
 import type { Order } from "../../config/supabase";
 import { formatDateTime, formatCurrency, playSound } from "../../utils/helpers";
+
+export const extractOrderMetadata = (notes?: string) => {
+  if (!notes) return { address: null, cutlery: null, cleanNotes: "" };
+
+  const addressMatch = notes.match(/Endereço:\s*([^•\n\r]+)/i);
+  const address = addressMatch ? addressMatch[1].trim() : null;
+
+  const cutlery = notes.includes("[COM TALHER]")
+    ? true
+    : notes.includes("[SEM TALHER]")
+    ? false
+    : null;
+
+  let cleanNotes = notes
+    .replace(/\[COM TALHER\]\s*•?\s*/gi, "")
+    .replace(/\[SEM TALHER\]\s*•?\s*/gi, "")
+    .replace(/\[DELIVERY:[^\]]+\]\s*•?\s*/gi, "")
+    .replace(/•?\s*Endereço:\s*[^•\n\r]+/gi, "")
+    .trim();
+
+  return { address, cutlery, cleanNotes };
+};
 
 const getOrderTypeLabel = (type: string) => {
   switch (type) {
@@ -555,6 +579,25 @@ const Orders: React.FC = () => {
                         {formatCurrency(order.total)}
                       </span>
                     </div>
+
+                    {/* Endereço de Entrega no Card Principal */}
+                    {(() => {
+                      const meta = extractOrderMetadata(order.customer_notes);
+                      if (!meta.address) return null;
+                      return (
+                        <div className="sm:col-span-2 flex items-start space-x-2 p-2.5 bg-amber-50/90 border border-amber-200/80 rounded-lg text-xs">
+                          <MapPin className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <span className="font-bold text-amber-900 block">
+                              Endereço de Entrega:
+                            </span>
+                            <span className="text-gray-900 font-semibold break-words">
+                              {meta.address}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Customer Notes */}
@@ -719,9 +762,17 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
               </p>
             )}
             {order.customer_phone && (
-              <p className="text-text-secondary">
+              <p className="text-text-secondary flex items-center gap-2">
                 <strong className="text-text">Telefone:</strong>{" "}
-                {order.customer_phone}
+                <a
+                  href={`https://wa.me/55${order.customer_phone.replace(/\D/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-accent hover:underline flex items-center gap-1 font-semibold"
+                >
+                  {order.customer_phone}
+                  <ExternalLink className="w-3.5 h-3.5 text-accent" />
+                </a>
               </p>
             )}
             <p className="text-text-secondary">
@@ -730,10 +781,59 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             </p>
             {order.table_number && (
               <p className="text-text-secondary">
-                <strong className="text-text">Mesa / Local:</strong>{" "}
+                <strong className="text-text">Mesa / Região:</strong>{" "}
                 {order.table_number}
               </p>
             )}
+
+            {/* Endereço de Entrega Destacado */}
+            {(() => {
+              const meta = extractOrderMetadata(order.customer_notes);
+              if (!meta.address) return null;
+              return (
+                <div className="mt-3 p-3.5 bg-amber-50/90 border border-amber-200 rounded-xl space-y-1.5 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+                      <MapPin className="w-4 h-4 text-amber-600" />
+                      Endereço Completo de Entrega
+                    </span>
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                        `${meta.address}, Goiânia - GO`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] font-bold text-amber-800 hover:text-amber-950 underline flex items-center gap-1"
+                    >
+                      Abrir no Maps
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                  <p className="font-bold text-sm sm:text-base text-gray-900 leading-snug">
+                    {meta.address}
+                  </p>
+                </div>
+              );
+            })()}
+
+            {/* Talheres */}
+            {(() => {
+              const meta = extractOrderMetadata(order.customer_notes);
+              if (meta.cutlery === null) return null;
+              return (
+                <div className="pt-1.5 flex items-center gap-2">
+                  <strong className="text-text text-sm">Talheres:</strong>
+                  <Badge
+                    variant={meta.cutlery ? "success" : "neutral"}
+                    className="font-bold text-xs"
+                  >
+                    {meta.cutlery
+                      ? "🍴 COM TALHER E GUARDANAPO"
+                      : "🌱 SEM TALHER (Consumo em Casa/Escritório)"}
+                  </Badge>
+                </div>
+              );
+            })()}
           </div>
         </div>
 
@@ -797,11 +897,23 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
         {/* Notes */}
         {order.customer_notes && (
-          <div className="bg-accent-secondary/10 border border-accent-secondary/20 rounded-lg p-4">
-            <h4 className="font-semibold text-text mb-2">Observações do Cliente</h4>
-            <p className="text-text-secondary text-sm">
-              {order.customer_notes}
-            </p>
+          <div className="bg-accent-secondary/10 border border-accent-secondary/20 rounded-lg p-4 space-y-1.5">
+            <h4 className="font-semibold text-text">Observações do Pedido</h4>
+            {(() => {
+              const meta = extractOrderMetadata(order.customer_notes);
+              return (
+                <>
+                  {meta.cleanNotes ? (
+                    <div className="p-2.5 bg-white rounded-md border border-accent-secondary/20 text-sm font-semibold text-gray-900">
+                      "{meta.cleanNotes}"
+                    </div>
+                  ) : null}
+                  <p className="text-text-secondary text-xs font-mono break-words pt-1">
+                    {order.customer_notes}
+                  </p>
+                </>
+              );
+            })()}
           </div>
         )}
 
