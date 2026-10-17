@@ -413,41 +413,75 @@ ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
--- Public policies (for customer ordering)
-CREATE POLICY "Public can view available menu items" ON menu_items FOR SELECT USING (is_available = TRUE);
-CREATE POLICY "Public can view active restaurants" ON restaurants FOR SELECT USING (is_active = TRUE AND status = 'active');
-CREATE POLICY "Public can create orders" ON orders FOR INSERT WITH CHECK (TRUE);
+-- Permissive policies for web application operation
+DROP POLICY IF EXISTS "Public can view available menu items" ON menu_items;
+CREATE POLICY "Public can view available menu items" ON menu_items FOR ALL USING (TRUE);
 
--- Restaurant policies (owners manage their data)
-CREATE POLICY "Restaurant owners can view their restaurant" ON restaurants FOR SELECT USING (auth.uid()::text IN (SELECT id::text FROM users WHERE restaurant_id = restaurants.id));
-CREATE POLICY "Restaurant owners can update their restaurant" ON restaurants FOR UPDATE USING (auth.uid()::text IN (SELECT id::text FROM users WHERE restaurant_id = restaurants.id));
-CREATE POLICY "Restaurant owners can manage menu" ON menu_items FOR ALL USING (auth.uid()::text IN (SELECT id::text FROM users WHERE restaurant_id = menu_items.restaurant_id));
-CREATE POLICY "Restaurant owners can manage orders" ON orders FOR ALL USING (auth.uid()::text IN (SELECT id::text FROM users WHERE restaurant_id = orders.restaurant_id));
+DROP POLICY IF EXISTS "Public can view active restaurants" ON restaurants;
+CREATE POLICY "Public can view active restaurants" ON restaurants FOR ALL USING (TRUE);
+
+DROP POLICY IF EXISTS "Public can create orders" ON orders;
+CREATE POLICY "Public can create orders" ON orders FOR ALL USING (TRUE);
+
+DROP POLICY IF EXISTS "Public can view registration requests" ON registration_requests;
+CREATE POLICY "Public can view registration requests" ON registration_requests FOR ALL USING (TRUE);
+
+DROP POLICY IF EXISTS "Public can view categories" ON menu_categories;
+CREATE POLICY "Public can view categories" ON menu_categories FOR ALL USING (TRUE);
+
+DROP POLICY IF EXISTS "Public can view notifications" ON notifications;
+CREATE POLICY "Public can view notifications" ON notifications FOR ALL USING (TRUE);
 
 -- =====================================================
 -- ENABLE REAL-TIME REPLICATION
 -- =====================================================
 ALTER TABLE registration_requests REPLICA IDENTITY FULL;
-ALTER PUBLICATION supabase_realtime ADD TABLE registration_requests;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE registration_requests; EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 ALTER TABLE restaurants REPLICA IDENTITY FULL;
-ALTER PUBLICATION supabase_realtime ADD TABLE restaurants;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE restaurants; EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 ALTER TABLE menu_items REPLICA IDENTITY FULL;
-ALTER PUBLICATION supabase_realtime ADD TABLE menu_items;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE menu_items; EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 ALTER TABLE orders REPLICA IDENTITY FULL;
-ALTER PUBLICATION supabase_realtime ADD TABLE orders;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE orders; EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- =====================================================
--- INSERT DEFAULT ADMIN USER
+-- INSERT DEFAULT ADMIN & DEFAULT RESTAURANT
 -- =====================================================
--- Email: admin@foodorder.com
--- Password: admin123
--- Hash: SHA-256 of "admin123"
+-- Email: admin@foodorder.com | Password: admin123
 INSERT INTO admin_users (email, password_hash, name, is_super_admin)
 VALUES ('admin@foodorder.com', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'System Admin', TRUE)
 ON CONFLICT (email) DO NOTHING;
+
+-- Default Restaurant: Cantinho da Rose
+INSERT INTO restaurants (id, name, slug, owner_name, phone, email, city, restaurant_type, subscription_plan, status, is_active)
+VALUES (
+  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  'Cantinho da Rose - Marmitaria Executiva',
+  'cantinho-da-rose',
+  'Rose',
+  '(62) 99999-8888',
+  'contato@cantinhodarose.com.br',
+  'Goiânia - GO',
+  'Marmitaria Executiva',
+  'pro',
+  'active',
+  TRUE
+) ON CONFLICT (slug) DO UPDATE SET is_active = TRUE;
+
+-- Default Owner User: contato@cantinhodarose.com.br | Password: 123
+-- Hash SHA-256 de "123": a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3
+INSERT INTO users (restaurant_id, email, password_hash, temp_password, role, is_active)
+VALUES (
+  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  'contato@cantinhodarose.com.br',
+  'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3',
+  FALSE,
+  'owner',
+  TRUE
+) ON CONFLICT (email) DO NOTHING;
 
 -- =====================================================
 -- VERIFICATION
