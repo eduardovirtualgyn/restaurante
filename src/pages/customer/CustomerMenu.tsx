@@ -185,11 +185,11 @@ const CustomerMenu: React.FC = () => {
       const demoId = "demo-restaurant-123";
       setRestaurant({
         id: demoId,
-        name: "Cantinho da Rose - Marmitaria Executiva",
+        name: "Cantinho da Rose - Comida Caseira & Marmitaria",
         slug: slug || "cantinho-da-rose",
-        restaurant_type: "Marmitaria Executiva",
+        restaurant_type: "Marmitaria Executiva & Comida Afetiva",
         is_active: true,
-        logo_url: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=150&auto=format&fit=crop&q=80",
+        logo_url: "/images/cantinho_da_rose_logo.png",
       });
       const savedDemo = localStorage.getItem(`menu_${demoId}`);
       if (savedDemo !== null) {
@@ -446,19 +446,19 @@ const CustomerMenu: React.FC = () => {
           {/* Top Brand Bar */}
           <div className="flex items-center justify-between gap-3 mb-2.5">
             <div className="flex items-center gap-3">
-              {restaurant.logo_url && (
+              <div className="relative flex-shrink-0">
                 <img
-                  src={restaurant.logo_url}
+                  src={restaurant.logo_url || "/images/cantinho_da_rose_logo.png"}
                   alt={restaurant.name}
-                  className="w-12 h-12 rounded-xl object-cover shadow-sm border border-gray-100"
+                  className="w-12 h-12 rounded-full object-cover shadow-sm border-2 border-amber-400 bg-amber-50"
                 />
-              )}
+              </div>
               <div>
-                <h1 className="font-bold text-lg text-gray-800 leading-tight">
+                <h1 className="font-bold text-base sm:text-lg text-gray-900 leading-tight">
                   {restaurant.name}
                 </h1>
                 <p className="text-xs text-gray-500 font-medium">
-                  {restaurant.restaurant_type || "Restaurante & Delivery"}
+                  {restaurant.restaurant_type || "Marmitaria Executiva & Comida Afetiva"}
                 </p>
               </div>
             </div>
@@ -508,6 +508,92 @@ const CustomerMenu: React.FC = () => {
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent/20"
             />
           </div>
+        </div>
+      </div>
+
+      {/* Hero Showcase Cantinho da Rose */}
+      <div className="max-w-screen-lg mx-auto px-4 pt-3.5 pb-1">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#741b12] via-[#94271c] to-[#45100a] text-white shadow-lg p-4 sm:p-6 border border-amber-500/25">
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-60 h-60 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-60 h-60 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 relative z-10">
+            {/* Imagem Oficial com Moldura Dourada */}
+            <div className="flex-shrink-0 relative group">
+              <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden shadow-2xl border-2 border-amber-300/80 bg-gradient-to-b from-white/20 to-white/5 backdrop-blur-sm p-1 transition-transform duration-300 group-hover:scale-105">
+                <img
+                  src="/images/cantinho_da_rose_logo.png"
+                  alt="Cantinho da Rose - Comida Caseira"
+                  className="w-full h-full object-cover rounded-xl"
+                />
+              </div>
+              <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-amber-400 text-amber-950 font-black text-[9px] sm:text-[10px] px-2.5 py-0.5 rounded-full shadow-md uppercase tracking-wider whitespace-nowrap">
+                Tempero Raiz
+              </span>
+            </div>
+
+            {/* Conteúdo & Storytelling */}
+            <div className="flex-1 text-center sm:text-left">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1.5">
+                <span className="bg-amber-400/20 text-amber-200 border border-amber-300/30 font-bold text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                  ⭐ 4.9 • Almoço Favorito da Região
+                </span>
+                <span className="bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 font-bold text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                  🛵 +2.500 Marmitas Entregues
+                </span>
+              </div>
+
+              <h2 className="text-xl sm:text-2xl font-black text-amber-100 tracking-tight leading-tight">
+                Cantinho da Rose
+              </h2>
+              <p className="text-xs sm:text-sm text-amber-200/90 font-medium italic mt-0.5">
+                "O autêntico sabor da comida caseira com tempero raiz de Goiânia."
+              </p>
+              <p className="text-xs sm:text-sm text-white/85 mt-2 leading-relaxed max-w-xl">
+                Feijão carioca de caldo encorpado feito no alho dourado, carnes suculentas seladas na hora e aquele aconchego de comida de mãe quentinha na sua mesa ou trabalho!
+              </p>
+
+              {/* Selos de Confiança e Benefícios */}
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-3 pt-2.5 border-t border-white/15 text-xs text-amber-200/95 font-medium">
+                <span className="flex items-center gap-1">
+                  <span>🌡️</span>
+                  <span>Marmita Térmica Quentinha</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <span>⚡</span>
+                  <span>Pix Copia-e-Cola Rápido</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <span>🎁</span>
+                  <span>10 Comandas = 1 Marmita Grátis</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Banner Promocional: Almoço da Firma / Família */}
+      <div className="max-w-screen-lg mx-auto px-4 py-1.5">
+        <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border border-amber-300/80 rounded-2xl p-3 flex flex-col sm:flex-row items-center justify-between gap-2.5 shadow-2xs">
+          <div className="flex items-center gap-2.5 text-center sm:text-left">
+            <span className="text-2xl sm:text-3xl">💼</span>
+            <div>
+              <p className="font-extrabold text-xs sm:text-sm text-gray-900 leading-tight">
+                Almoço da Firma ou da Família?
+              </p>
+              <p className="text-[11px] text-gray-600">
+                Peça o <strong>Combo Família (3 a 4 pessoas)</strong> e ganhe <strong>1 Refrigerante 2L Gelado</strong> de presente!
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setCategoryFilter("⭐ Combos Família")}
+            className="w-full sm:w-auto px-3.5 py-1.5 bg-accent hover:bg-accent-hover text-white font-bold text-xs rounded-xl shadow-2xs transition-all active:scale-95 flex items-center justify-center gap-1.5 flex-shrink-0"
+          >
+            <span>Ver Combos</span>
+            <span>→</span>
+          </button>
         </div>
       </div>
 
@@ -681,12 +767,50 @@ const CustomerMenu: React.FC = () => {
             })}
           </div>
         )}
+
+        {/* Programa Fidelidade da Rose */}
+        <div className="pt-6 pb-2">
+          <div className="bg-white border-2 border-amber-200/90 rounded-2xl p-4 sm:p-5 shadow-xs">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5 text-center sm:text-left">
+                <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-2xl flex-shrink-0 shadow-inner">
+                  🎁
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-sm sm:text-base text-gray-900 flex items-center justify-center sm:justify-start gap-1.5">
+                    <span>Programa Fidelidade da Rose</span>
+                    <span className="text-[10px] bg-amber-400 text-amber-950 font-black px-2 py-0.5 rounded-full uppercase">
+                      Exclusivo
+                    </span>
+                  </h4>
+                  <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                    Guarde os comprovantes impressos que acompanham a sua sacola! Juntando <strong>10 comandas</strong>, você ganha <strong>1 Marmita Executiva Grátis</strong> no próximo pedido!
+                  </p>
+                </div>
+              </div>
+              <div className="text-center sm:text-right flex-shrink-0">
+                <span className="inline-block text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 shadow-2xs">
+                  🌱 Marmitas 100% Lacradas & Higienizadas
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Cart Modal */}
       <CartModal
         isOpen={showCart}
         cart={cart}
+        upsellItems={menuItems.filter(
+          (i) =>
+            i.is_available &&
+            (i.name.toLowerCase().includes("lata") ||
+              i.name.toLowerCase().includes("pudim") ||
+              i.name.toLowerCase().includes("água") ||
+              i.name.toLowerCase().includes("agua"))
+        )}
+        onAddSimple={handleAddSimple}
         onClose={() => setShowCart(false)}
         onUpdateQuantity={updateQuantity}
         onRemove={removeFromCart}
@@ -753,6 +877,8 @@ const CustomerMenu: React.FC = () => {
 interface CartModalProps {
   isOpen: boolean;
   cart: CartItem[];
+  upsellItems?: MenuItem[];
+  onAddSimple?: (item: MenuItem) => void;
   onClose: () => void;
   onUpdateQuantity: (index: number, delta: number) => void;
   onRemove: (index: number) => void;
@@ -762,6 +888,8 @@ interface CartModalProps {
 const CartModal: React.FC<CartModalProps> = ({
   isOpen,
   cart,
+  upsellItems = [],
+  onAddSimple,
   onClose,
   onUpdateQuantity,
   onRemove,
@@ -773,8 +901,8 @@ const CartModal: React.FC<CartModalProps> = ({
   );
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Seu Pedido" size="lg">
-      <div className="space-y-6">
+    <Modal isOpen={isOpen} onClose={onClose} title="Sua Sacola de Almoço" size="lg">
+      <div className="space-y-5">
         {cart.length === 0 ? (
           <div className="text-center py-8">
             <ShoppingCart className="w-16 h-16 text-text-secondary mx-auto mb-4 opacity-50" />
@@ -782,57 +910,102 @@ const CartModal: React.FC<CartModalProps> = ({
           </div>
         ) : (
           <>
-            <div className="space-y-4 max-h-96 overflow-y-auto">
+            <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
               {cart.map((item, index) => (
                 <div
                   key={index}
-                  className="flex items-start space-x-4 p-4 bg-bg-subtle rounded-lg"
+                  className="flex items-start space-x-3 p-3.5 bg-bg-subtle rounded-xl border border-border/50"
                 >
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-text">{item.name}</h4>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-bold text-sm text-text truncate">{item.name}</h4>
                     {item.selectedSize && (
-                      <p className="text-sm text-text-secondary">
+                      <p className="text-xs text-text-secondary">
                         Tamanho: {item.selectedSize.name}
                       </p>
                     )}
                     {item.selectedAddons.length > 0 && (
-                      <p className="text-sm text-text-secondary">
+                      <p className="text-xs text-text-secondary">
                         Adicionais:{" "}
                         {item.selectedAddons.map((a) => a.name).join(", ")}
                       </p>
                     )}
-                    <p className="text-accent font-semibold mt-1">
+                    <p className="text-accent font-bold text-sm mt-1">
                       {formatCurrency(item.itemTotal)}
                     </p>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-1.5 bg-white border border-border rounded-lg p-1">
                     <button
                       onClick={() => onUpdateQuantity(index, -1)}
-                      className="p-1 rounded-full bg-border hover:bg-text-secondary/20"
+                      className="p-1 rounded hover:bg-gray-100 text-gray-700"
                     >
-                      <Minus className="w-4 h-4" />
+                      <Minus className="w-3.5 h-3.5" />
                     </button>
-                    <span className="w-8 text-center font-semibold">
+                    <span className="w-6 text-center font-bold text-xs">
                       {item.quantity}
                     </span>
                     <button
                       onClick={() => onUpdateQuantity(index, 1)}
-                      className="p-1 rounded-full bg-border hover:bg-text-secondary/20"
+                      className="p-1 rounded hover:bg-gray-100 text-gray-700"
                     >
-                      <Plus className="w-4 h-4" />
+                      <Plus className="w-3.5 h-3.5" />
                     </button>
                   </div>
                   <button
                     onClick={() => onRemove(index)}
-                    className="p-1 text-error hover:bg-error/10 rounded"
+                    className="p-1.5 text-gray-400 hover:text-error hover:bg-error/10 rounded-lg transition-colors"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               ))}
             </div>
 
-            <div className="border-t border-border pt-4 space-y-2.5">
+            {/* Upsell Cross-sell Section */}
+            {upsellItems && upsellItems.length > 0 && (
+              <div className="pt-3 border-t border-border/80">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-950 flex items-center gap-1.5">
+                    <span>✨</span> Que tal completar seu almoço?
+                  </span>
+                  <span className="text-[10px] text-amber-800 bg-amber-100 font-bold px-2 py-0.5 rounded-full">
+                    Acompanhamentos
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {upsellItems.slice(0, 4).map((item) => {
+                    const quantity =
+                      cart.find((c) => c.id === item.id)?.quantity || 0;
+                    return (
+                      <div
+                        key={item.id}
+                        className="p-2.5 bg-amber-50/70 border border-amber-200/80 rounded-xl flex flex-col justify-between"
+                      >
+                        <div>
+                          <p className="font-bold text-xs text-gray-900 line-clamp-1">
+                            {item.name}
+                          </p>
+                          <p className="text-[11px] font-extrabold text-amber-900 mt-0.5">
+                            {formatCurrency(item.base_price)}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => onAddSimple && onAddSimple(item)}
+                          className="mt-2 w-full py-1.5 px-2 bg-accent text-white font-bold text-[11px] rounded-lg hover:bg-accent-hover transition-all flex items-center justify-center gap-1 shadow-2xs active:scale-95"
+                        >
+                          <Plus className="w-3 h-3 stroke-[3]" />
+                          <span>
+                            {quantity > 0 ? `+1 (${quantity} no carrinho)` : "Adicionar"}
+                          </span>
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div className="border-t border-border pt-3.5 space-y-2">
               <div className="flex justify-between items-center text-sm text-text-secondary">
                 <span>Subtotal dos Itens:</span>
                 <span className="font-semibold text-text">{formatCurrency(total)}</span>
@@ -841,9 +1014,9 @@ const CartModal: React.FC<CartModalProps> = ({
                 <span>🛵 Taxa de Entrega:</span>
                 <span className="font-bold">Calculada na próxima etapa</span>
               </div>
-              <div className="flex justify-between text-xl font-bold text-text pt-1">
+              <div className="flex justify-between text-lg font-bold text-text pt-1">
                 <span>Total dos Itens</span>
-                <span className="text-accent">{formatCurrency(total)}</span>
+                <span className="text-accent text-xl">{formatCurrency(total)}</span>
               </div>
               <Button onClick={onCheckout} fullWidth size="lg" className="font-bold">
                 Avançar para Entrega e Pagamento
