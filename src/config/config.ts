@@ -20,6 +20,11 @@ export const APP_CONFIG = {
   defaultCurrency: "R$ ",
   taxRate: 0.0,
   orderPrefix: "PED",
+  pixKey:
+    import.meta.env.VITE_PIX_KEY ||
+    (import.meta.env as any).REACT_APP_PIX_KEY ||
+    "00.000.000/0001-00",
+  pixBeneficiary: "Cantinho da Rose",
 
   // Subscription plans
   plans: {
