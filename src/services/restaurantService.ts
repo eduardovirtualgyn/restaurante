@@ -70,14 +70,13 @@ export const subscribeToOrders = (
   }
 
   const subscription = supabase
-    .channel(`restaurant-orders-${finalId}`)
+    .channel(`restaurant-orders-live-${finalId}`)
     .on(
       "postgres_changes",
       {
         event: "*",
         schema: "public",
         table: "orders",
-        filter: `restaurant_id=eq.${finalId}`,
       },
       () => {
         fetchOrders();

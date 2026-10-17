@@ -262,10 +262,17 @@ const Orders: React.FC = () => {
       syncOrders();
     }, 2500);
 
-    // 3. Ouvintes de eventos locais entre abas
+    // 3. Ouvintes de eventos locais entre abas, foco da janela e visibilidade da tela
     const handleStorageChange = () => syncOrders();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        syncOrders();
+      }
+    };
     window.addEventListener("storage", handleStorageChange);
     window.addEventListener("local-data-updated", handleStorageChange);
+    window.addEventListener("focus", handleStorageChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     // 4. Sincronização via Supabase em tempo real (se configurado)
     let subscription: any = null;
@@ -281,6 +288,8 @@ const Orders: React.FC = () => {
       clearInterval(pollInterval);
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("local-data-updated", handleStorageChange);
+      window.removeEventListener("focus", handleStorageChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       subscription?.unsubscribe?.();
     };
   }, []);
