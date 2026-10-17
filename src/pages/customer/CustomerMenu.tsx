@@ -65,9 +65,13 @@ const CustomerMenu: React.FC = () => {
   }, [slug]);
 
   useEffect(() => {
-    if (restaurant?.id && restaurant.id !== "demo-restaurant-123") {
+    if (restaurant?.id) {
       const subscription = subscribeToMenuItems(restaurant.id, (data) => {
-        setMenuItems(data);
+        if (data && data.length > 0) {
+          setMenuItems(data);
+        } else {
+          setMenuItems(getDefaultGoianoMenu(restaurant.id));
+        }
         setLoading(false);
       });
 
