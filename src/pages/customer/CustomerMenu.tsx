@@ -11,6 +11,7 @@ import {
   Copy,
   Check,
   ArrowRight,
+  Printer,
 } from "lucide-react";
 import {
   Card,
@@ -156,7 +157,12 @@ const CustomerMenu: React.FC = () => {
           const hasLocalCocaPic = parsed.some(
             (i: any) => i.image_url === "/images/coca_cola_2l.jpg"
           );
-          if (hasNight || !hasChurrasco || !hasGuarana2L || !hasLocalGuaranaPic || !hasLocalCocaPic) {
+          const hasTorresmo = parsed.some(
+            (i: any) =>
+              i.addons &&
+              i.addons.some((a: any) => a.name.includes("Torresminho"))
+          );
+          if (hasNight || !hasChurrasco || !hasGuarana2L || !hasLocalGuaranaPic || !hasLocalCocaPic || !hasTorresmo) {
             const fullItems = getDefaultGoianoMenu(foundCustom.id);
             setMenuItems(fullItems);
             localStorage.setItem(`menu_${foundCustom.id}`, JSON.stringify(fullItems));
@@ -218,7 +224,12 @@ const CustomerMenu: React.FC = () => {
           const hasLocalCocaPic = parsed.some(
             (i: any) => i.image_url === "/images/coca_cola_2l.jpg"
           );
-          if (hasNight || !hasChurrasco || !hasGuarana2L || !hasLocalGuaranaPic || !hasLocalCocaPic) {
+          const hasTorresmo = parsed.some(
+            (i: any) =>
+              i.addons &&
+              i.addons.some((a: any) => a.name.includes("Torresminho"))
+          );
+          if (hasNight || !hasChurrasco || !hasGuarana2L || !hasLocalGuaranaPic || !hasLocalCocaPic || !hasTorresmo) {
             const demoItems = getDefaultGoianoMenu(demoId);
             setMenuItems(demoItems);
             localStorage.setItem(`menu_${demoId}`, JSON.stringify(demoItems));
@@ -281,9 +292,21 @@ const CustomerMenu: React.FC = () => {
   const shiftStatus = getShiftStatus();
 
   const getItemCategory = (item: any): string => {
-    if (item.category && item.category.trim()) return item.category.trim();
+    const rawCat = (item.category || "").toLowerCase();
     const name = (item.name || "").toLowerCase();
+
     if (
+      rawCat.includes("família") ||
+      rawCat.includes("familia") ||
+      rawCat.includes("combo") ||
+      name.includes("família") ||
+      name.includes("familia") ||
+      name.includes("corporativ")
+    ) {
+      return "⭐ Combos Família & Firma";
+    }
+    if (
+      rawCat.includes("bebida") ||
       name.includes("coca") ||
       name.includes("guaraná") ||
       name.includes("guarana") ||
@@ -296,11 +319,14 @@ const CustomerMenu: React.FC = () => {
     ) {
       return "Bebidas Geladas";
     }
-    if (name.includes("pudim") || name.includes("sobremesa") || name.includes("doce")) {
+    if (
+      rawCat.includes("sobremesa") ||
+      rawCat.includes("doce") ||
+      name.includes("pudim") ||
+      name.includes("sobremesa") ||
+      name.includes("doce")
+    ) {
       return "Sobremesas da Casa";
-    }
-    if (name.includes("família") || name.includes("familia") || name.includes("corporativ")) {
-      return "⭐ Combos Família";
     }
     return "Marmitas Executivas";
   };
@@ -313,7 +339,7 @@ const CustomerMenu: React.FC = () => {
   const categoryOrder = [
     "all",
     "Marmitas Executivas",
-    "⭐ Combos Família",
+    "⭐ Combos Família & Firma",
     "Bebidas Geladas",
     "Sobremesas da Casa",
   ];
@@ -581,25 +607,51 @@ const CustomerMenu: React.FC = () => {
         </div>
       </div>
 
-      {/* Banner Promocional: Almoço da Firma / Família */}
-      <div className="max-w-screen-lg mx-auto px-4 py-1.5">
-        <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border border-amber-300/80 rounded-2xl p-3 flex flex-col sm:flex-row items-center justify-between gap-2.5 shadow-2xs">
-          <div className="flex items-center gap-2.5 text-center sm:text-left">
-            <span className="text-2xl sm:text-3xl">💼</span>
+      {/* Banner de Garantia & Confiança da Rose */}
+      <div className="max-w-screen-lg mx-auto px-4 pt-2">
+        <div className="bg-amber-50/90 border border-amber-200/90 rounded-2xl py-2 px-3 text-center text-xs text-amber-950 font-bold flex flex-wrap items-center justify-center gap-x-4 gap-y-1 shadow-2xs">
+          <span className="flex items-center gap-1.5">
+            <span>🔥</span> Feito Hoje Cedo
+          </span>
+          <span className="text-amber-300 hidden sm:inline">•</span>
+          <span className="flex items-center gap-1.5">
+            <span>🧄</span> Tempero 100% Natural Sem Conservantes
+          </span>
+          <span className="text-amber-300 hidden sm:inline">•</span>
+          <span className="flex items-center gap-1.5">
+            <span>🍲</span> Panela Nova Todo Dia
+          </span>
+          <span className="text-amber-300 hidden sm:inline">•</span>
+          <span className="flex items-center gap-1.5">
+            <span>🛵</span> Marmita Térmica Quentinha
+          </span>
+        </div>
+      </div>
+
+      {/* Banner Promocional: Almoço da Firma / Equipes */}
+      <div className="max-w-screen-lg mx-auto px-4 py-2">
+        <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-emerald-500/15 border-2 border-amber-300/90 rounded-2xl p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3 text-center sm:text-left">
+            <span className="text-3xl sm:text-4xl flex-shrink-0">💼</span>
             <div>
-              <p className="font-extrabold text-xs sm:text-sm text-gray-900 leading-tight">
-                Almoço da Firma ou da Família?
-              </p>
-              <p className="text-[11px] text-gray-600">
-                Peça o <strong>Combo Família (3 a 4 pessoas)</strong> e ganhe <strong>1 Refrigerante 2L Gelado</strong> de presente!
+              <div className="flex items-center justify-center sm:justify-start gap-1.5">
+                <span className="bg-emerald-600 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-full">
+                  B2B & Família
+                </span>
+                <p className="font-black text-sm sm:text-base text-gray-900 leading-tight">
+                  Almoço da Firma ou da Família?
+                </p>
+              </div>
+              <p className="text-xs text-gray-700 mt-1">
+                Pedindo para a equipe ou em família? Peça o <strong>Combo Família (3 a 4 pessoas)</strong> e ganhe <strong>1 Refrigerante 2L Geladíssimo</strong> de presente + entrega pontual!
               </p>
             </div>
           </div>
           <button
-            onClick={() => setCategoryFilter("⭐ Combos Família")}
-            className="w-full sm:w-auto px-3.5 py-1.5 bg-accent hover:bg-accent-hover text-white font-bold text-xs rounded-xl shadow-2xs transition-all active:scale-95 flex items-center justify-center gap-1.5 flex-shrink-0"
+            onClick={() => setCategoryFilter("⭐ Combos Família & Firma")}
+            className="w-full sm:w-auto px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl shadow-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 flex-shrink-0 uppercase tracking-wide cursor-pointer"
           >
-            <span>Ver Combos</span>
+            <span>Ver Opções da Firma</span>
             <span>→</span>
           </button>
         </div>
@@ -608,20 +660,30 @@ const CustomerMenu: React.FC = () => {
       {/* Category Tabs */}
       <div className="bg-white border-b sticky top-[138px] z-30 shadow-2xs">
         <div className="max-w-screen-lg mx-auto px-4">
-          <div className="flex gap-2 overflow-x-auto py-2 scrollbar-hide">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setCategoryFilter(category || "all")}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                  categoryFilter === category
-                    ? "bg-accent text-white shadow-2xs"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                {category === "all" ? "Todas as Opções" : category}
-              </button>
-            ))}
+          <div className="flex gap-2 overflow-x-auto py-2.5 scrollbar-hide">
+            {categories.map((category) => {
+              const labelMap: Record<string, string> = {
+                all: "🍽️ Todas as Opções",
+                "Marmitas Executivas": "🍛 Marmitas Executivas",
+                "⭐ Combos Família & Firma": "⭐ Combos Família & Firma",
+                "Bebidas Geladas": "🥤 Bebidas Geladas",
+                "Sobremesas da Casa": "🍮 Sobremesas da Casa",
+              };
+
+              return (
+                <button
+                  key={category}
+                  onClick={() => setCategoryFilter(category || "all")}
+                  className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer ${
+                    categoryFilter === category
+                      ? "bg-emerald-700 text-white shadow-sm"
+                      : "bg-gray-100/90 text-gray-700 hover:bg-gray-200 border border-gray-200/60"
+                  }`}
+                >
+                  {labelMap[category] || category}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -676,22 +738,46 @@ const CustomerMenu: React.FC = () => {
                     )}
 
                     {/* Destaque / Highlight Badge */}
-                    {item.category?.includes("Família") ? (
+                    {item.name.includes("Família") || item.category?.includes("Família") ? (
                       <div className="absolute top-2 left-2">
-                        <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1">
-                          ⭐ Família (3 a 4 pessoas)
+                        <span className="bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1">
+                          🎁 Refri 2L Grátis!
                         </span>
                       </div>
                     ) : item.name.includes("Campeão") ? (
                       <div className="absolute top-2 left-2">
-                        <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1">
-                          🔥 Mais Pedido
+                        <span className="bg-red-600 text-white text-[10px] font-black px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1">
+                          🏆 Mais Vendido
+                        </span>
+                      </div>
+                    ) : item.name.includes("Goianinho") ? (
+                      <div className="absolute top-2 left-2">
+                        <span className="bg-amber-400 text-amber-950 font-black text-[10px] px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1 border border-amber-500/30">
+                          ⭐ Escolha da Dona Rose
+                        </span>
+                      </div>
+                    ) : item.name.includes("Cupim") || item.name.includes("Nobre") ? (
+                      <div className="absolute top-2 left-2">
+                        <span className="bg-purple-700 text-white text-[10px] font-black px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1">
+                          🥩 Derrete na Boca
+                        </span>
+                      </div>
+                    ) : item.name.includes("Churrasco") ? (
+                      <div className="absolute top-2 left-2">
+                        <span className="bg-orange-600 text-white text-[10px] font-black px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1">
+                          🔥 Tempero Raiz
                         </span>
                       </div>
                     ) : item.name.includes("Econômico") ? (
                       <div className="absolute top-2 left-2">
-                        <span className="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1">
-                          💰 Melhor Custo-Benefício
+                        <span className="bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1">
+                          💰 Custo-Benefício
+                        </span>
+                      </div>
+                    ) : item.name.includes("Pudim") ? (
+                      <div className="absolute top-2 left-2">
+                        <span className="bg-amber-600 text-white text-[10px] font-black px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1">
+                          🍮 Receita Secreta
                         </span>
                       </div>
                     ) : null}
@@ -707,11 +793,11 @@ const CustomerMenu: React.FC = () => {
 
                   <div className="p-3 flex-1 flex flex-col justify-between">
                     <div>
-                      <h3 className="font-semibold text-sm text-gray-800 mb-1 line-clamp-2 h-10 leading-tight">
+                      <h3 className="font-bold text-sm text-gray-900 mb-1 line-clamp-2 h-10 leading-tight">
                         {item.name}
                       </h3>
                       {item.description && (
-                        <p className="text-[11px] text-gray-500 line-clamp-2 mb-2">
+                        <p className="text-[11px] text-gray-500 line-clamp-2 mb-2 leading-relaxed">
                           {item.description}
                         </p>
                       )}
@@ -719,7 +805,7 @@ const CustomerMenu: React.FC = () => {
 
                     <div className="flex items-end justify-between mt-2 pt-2 border-t border-gray-50">
                       <div>
-                        <p className="font-bold text-gray-800">
+                        <p className="font-black text-gray-900 text-base">
                           {item.sizes && item.sizes.length > 0
                             ? formatCurrency(
                                 Math.min(...item.sizes.map((s) => s.price))
@@ -737,21 +823,21 @@ const CustomerMenu: React.FC = () => {
                                   ? handleItemClick(item)
                                   : handleAddSimple(item)
                               }
-                              className="px-3.5 py-1.5 border-2 border-accent text-accent hover:bg-accent hover:text-white font-bold text-xs rounded-md hover:shadow-xs transition-all flex items-center gap-1 active:scale-95"
+                              className="px-3.5 py-1.5 bg-emerald-50 border-2 border-emerald-600 text-emerald-800 hover:bg-emerald-600 hover:text-white font-black text-xs rounded-xl hover:shadow-xs transition-all flex items-center gap-1 active:scale-95 cursor-pointer"
                               title={hasVariations ? "Escolher opções" : "Adicionar ao carrinho"}
                             >
                               <Plus className="w-3.5 h-3.5 stroke-[3]" />
                               <span>{hasVariations ? "PEDIR" : "ADICIONAR"}</span>
                             </button>
                           ) : (
-                            <div className="flex items-center bg-accent text-white rounded-md">
+                            <div className="flex items-center bg-emerald-700 text-white rounded-xl shadow-xs overflow-hidden">
                               <button
                                 onClick={() => handleRemoveItem(item.id)}
-                                className="px-2 py-1 hover:bg-accent-hover rounded-l-md"
+                                className="px-2 py-1 hover:bg-emerald-800 transition-colors"
                               >
                                 <Minus className="w-3.5 h-3.5" />
                               </button>
-                              <span className="px-3 font-bold text-sm">
+                              <span className="px-2.5 font-black text-sm">
                                 {quantity}
                               </span>
                               <button
@@ -760,7 +846,7 @@ const CustomerMenu: React.FC = () => {
                                     ? handleItemClick(item)
                                     : handleAddSimple(item)
                                 }
-                                className="px-2 py-1 hover:bg-accent-hover rounded-r-md"
+                                className="px-2 py-1 hover:bg-emerald-800 transition-colors"
                               >
                                 <Plus className="w-3.5 h-3.5" />
                               </button>
@@ -1144,24 +1230,44 @@ const ItemCustomizationModal: React.FC<ItemCustomizationModalProps> = ({
         {/* Addons */}
         {item.addons && item.addons.length > 0 && (
           <div>
-            <h4 className="font-semibold text-text mb-3">Acompanhamentos / Adicionais (Opcional)</h4>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-extrabold text-sm text-gray-900 flex items-center gap-1.5">
+                <span>✨</span> Turbine sua Marmita (Mimos da Roça)
+              </h4>
+              <span className="text-[11px] text-gray-400 font-medium">Opcional</span>
+            </div>
             <div className="space-y-2">
-              {item.addons.map((addon) => (
-                <button
-                  key={addon.name}
-                  onClick={() => toggleAddon(addon)}
-                  className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-colors ${
-                    selectedAddons.find((a) => a.name === addon.name)
-                      ? "border-accent bg-accent/5"
-                      : "border-border hover:border-accent/50"
-                  }`}
-                >
-                  <span className="font-medium text-text">{addon.name}</span>
-                  <span className="text-accent font-semibold">
-                    +{formatCurrency(addon.price)}
-                  </span>
-                </button>
-              ))}
+              {item.addons.map((addon) => {
+                const isSelected = !!selectedAddons.find((a) => a.name === addon.name);
+                return (
+                  <button
+                    key={addon.name}
+                    type="button"
+                    onClick={() => toggleAddon(addon)}
+                    className={`w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all cursor-pointer ${
+                      isSelected
+                        ? "border-emerald-600 bg-emerald-50/90 text-emerald-950 shadow-2xs"
+                        : "border-gray-200 hover:border-gray-300 bg-white text-gray-700"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 text-left">
+                      <div
+                        className={`w-5 h-5 rounded-md border flex items-center justify-center text-xs font-bold ${
+                          isSelected
+                            ? "bg-emerald-600 border-emerald-600 text-white"
+                            : "border-gray-300 bg-white"
+                        }`}
+                      >
+                        {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                      </div>
+                      <span className="font-semibold text-xs sm:text-sm">{addon.name}</span>
+                    </div>
+                    <span className="font-bold text-xs sm:text-sm text-emerald-700 flex-shrink-0">
+                      +{formatCurrency(addon.price)}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -1484,6 +1590,121 @@ _Pedido gerado via Cardápio Digital._`;
     window.open(url, "_blank");
   };
 
+  const handlePrintBagTag = () => {
+    if (!placedOrder) return;
+    const printWindow = window.open("", "_blank", "width=450,height=650");
+    if (!printWindow) return;
+
+    const itemsHtml = (cart || [])
+      .map(
+        (i) => `
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px; font-weight: bold;">
+          <span>${i.quantity}x ${i.name} ${i.selectedSize ? "(" + i.selectedSize.name + ")" : ""}</span>
+          <span>${formatCurrency(i.itemTotal * i.quantity)}</span>
+        </div>
+        ${
+          i.selectedAddons && i.selectedAddons.length > 0
+            ? '<div style="font-size: 11px; color: #444; margin-left: 12px; margin-bottom: 4px;">+ ' +
+              i.selectedAddons.map((a: any) => a.name).join(", ") +
+              "</div>"
+            : ""
+        }
+      `
+      )
+      .join("");
+
+    const orderDestination =
+      orderType === "table"
+        ? `Mesa ${tableNumber}`
+        : isBalcao
+        ? "Retirada no Balcão"
+        : `Entrega em ${selectedRegion.shortName}`;
+
+    const dateStr = new Date().toLocaleString("pt-BR");
+    const addressHtml =
+      orderType === "takeaway" && !isBalcao && deliveryAddress
+        ? `<div style="font-size: 11px; margin-top: 4px; text-align: left;">Endereço: ${deliveryAddress}</div>`
+        : "";
+    const notesHtml = placedOrder.customer_notes
+      ? `<div class="divider"></div><div style="font-size: 11px;"><strong>Obs:</strong> ${placedOrder.customer_notes}</div>`
+      : "";
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Tag de Sacola - Pedido #${placedOrder.order_number}</title>
+        <style>
+          @page { size: 80mm auto; margin: 4mm; }
+          body {
+            font-family: monospace, sans-serif;
+            width: 72mm;
+            margin: 0 auto;
+            padding: 8px;
+            color: #000;
+            background: #fff;
+            line-height: 1.3;
+          }
+          .center { text-align: center; }
+          .bold { font-weight: 900; }
+          .divider { border-top: 1px dashed #000; margin: 8px 0; }
+          .tag-box { border: 2px solid #000; padding: 6px; text-align: center; margin: 8px 0; border-radius: 4px; }
+        </style>
+      </head>
+      <body>
+        <div class="center">
+          <h2 style="margin: 0; font-size: 17px; text-transform: uppercase;">CANTINHO DA ROSE</h2>
+          <p style="margin: 2px 0; font-size: 11px;">Marmitaria Executiva & Comida Afetiva</p>
+          <p style="margin: 2px 0; font-size: 10px;">Goiânia - GO • (62) 99341-3221</p>
+          <div class="divider"></div>
+          <h3 style="margin: 4px 0; font-size: 16px;">PEDIDO #${placedOrder.order_number}</h3>
+          <p style="margin: 2px 0; font-size: 11px;">${dateStr}</p>
+        </div>
+
+        <div class="tag-box">
+          <div style="font-size: 15px;" class="bold">${orderDestination}</div>
+          <div style="font-size: 12px; margin-top: 2px;">Cliente: <strong>${customerName}</strong></div>
+          <div style="font-size: 12px;">WhatsApp: ${customerPhone}</div>
+          <div style="font-size: 11px; margin-top: 4px; padding-top: 3px; border-top: 1px dashed #555;" class="bold">
+            ${needsCutlery ? "🥢 COM TALHER DESCARTÁVEL" : "🌱 SEM TALHER DESCARTÁVEL"}
+          </div>
+          ${addressHtml}
+        </div>
+
+        <div class="divider"></div>
+        <div class="bold" style="font-size: 12px; margin-bottom: 6px;">ITENS DO PEDIDO:</div>
+        ${itemsHtml}
+
+        <div class="divider"></div>
+        <div style="display: flex; justify-content: space-between; font-size: 14px;" class="bold">
+          <span>TOTAL:</span>
+          <span>${formatCurrency(placedOrder.total)}</span>
+        </div>
+        <div style="font-size: 11px; margin-top: 2px;">Pagamento: Pix / Chave CNPJ</div>
+
+        ${notesHtml}
+
+        <div class="divider"></div>
+        <div class="center" style="font-size: 11px; margin-top: 10px;">
+          <p style="margin: 2px 0;" class="bold">❤️ Feito com amor pela Dona Rose!</p>
+          <p style="margin: 2px 0; font-size: 10px;">Guarde este comprovante:</p>
+          <p style="margin: 2px 0; font-size: 12px;" class="bold">🎁 10 Comandas = 1 Marmita Grátis</p>
+          <p style="margin: 4px 0; font-size: 10px; color: #444;">cantinho-da-rose.sslip.io</p>
+        </div>
+        <script>
+          window.onload = function() {
+            window.print();
+          };
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+  };
+
   const resetForm = () => {
     setCustomerName("");
     setCustomerPhone("");
@@ -1584,6 +1805,18 @@ _Pedido gerado via Cardápio Digital._`;
               className="bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold flex items-center justify-center gap-2 shadow-sm"
             >
               <span>📱</span> Enviar Pedido e Comprovante no WhatsApp
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              fullWidth
+              size="md"
+              onClick={handlePrintBagTag}
+              className="border-emerald-300 text-emerald-800 hover:bg-emerald-50 flex items-center justify-center gap-2 font-bold cursor-pointer"
+            >
+              <Printer className="w-4 h-4 text-emerald-700" />
+              <span>Imprimir Tag de Sacola / Comprovante</span>
             </Button>
 
             <Button
