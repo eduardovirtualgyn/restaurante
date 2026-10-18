@@ -851,8 +851,8 @@ const CustomerMenu: React.FC = () => {
       />
 
       {/* Bottom Cart Floating Bar */}
-      {cartCount > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 p-3 sm:p-4 bg-gradient-to-t from-black/40 via-black/10 to-transparent pointer-events-none">
+      {cartCount > 0 && !showCart && !showCheckout && !showItemModal && (
+        <div className="fixed bottom-0 left-0 right-0 z-30 p-3 sm:p-4 bg-gradient-to-t from-black/40 via-black/10 to-transparent pointer-events-none">
           <div className="max-w-md sm:max-w-lg mx-auto pointer-events-auto">
             <button
               onClick={() => setShowCart(true)}
@@ -1043,8 +1043,13 @@ const CartModal: React.FC<CartModalProps> = ({
                 <span>Total dos Itens</span>
                 <span className="text-accent text-xl">{formatCurrency(total)}</span>
               </div>
-              <Button onClick={onCheckout} fullWidth size="lg" className="font-bold">
-                Avançar para Entrega e Pagamento
+              <Button
+                onClick={onCheckout}
+                fullWidth
+                size="lg"
+                className="font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-md text-base py-3.5"
+              >
+                Avançar para Entrega e Pagamento →
               </Button>
             </div>
           </>
@@ -1796,11 +1801,16 @@ _Pedido gerado via Cardápio Digital._`;
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3">
-          <Button type="button" variant="outline" onClick={onClose} fullWidth>
+        <div className="flex gap-3 pt-2">
+          <Button type="button" variant="outline" onClick={onClose} className="w-1/3">
             Voltar
           </Button>
-          <Button type="submit" loading={loading} fullWidth size="lg" className="font-bold">
+          <Button
+            type="submit"
+            loading={loading}
+            size="lg"
+            className="w-2/3 font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-md text-sm sm:text-base py-3"
+          >
             Confirmar Pedido ({formatCurrency(total)})
           </Button>
         </div>
